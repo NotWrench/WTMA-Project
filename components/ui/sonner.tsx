@@ -10,6 +10,8 @@ import {
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
+import { LucideThemedIcon } from "@/components/ui/lucide-icon";
+
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
 
@@ -17,15 +19,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+        success: <LucideThemedIcon icon={CircleCheckIcon} tone="primary" />,
+        info: <LucideThemedIcon icon={InfoIcon} tone="secondary" />,
+        warning: <LucideThemedIcon icon={TriangleAlertIcon} tone="tertiary" />,
+        error: <LucideThemedIcon icon={OctagonXIcon} tone="destructive" />,
+        loading: (
+          <LucideThemedIcon
+            className="animate-spin"
+            icon={Loader2Icon}
+            tone="primary"
+          />
+        ),
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
+          "--normal-bg": "var(--surface-container-low)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
@@ -34,7 +42,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast:
+            "cn-toast border border-border/70 bg-surface-container-low shadow-sm",
         },
       }}
       {...props}

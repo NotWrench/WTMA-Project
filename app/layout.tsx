@@ -1,12 +1,15 @@
-import { Geist, Geist_Mono, Montserrat } from "next/font/google";
+import { Geist_Mono, Manrope, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
-const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
 
-const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-sans" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -24,8 +27,8 @@ export default function RootLayout({
         "antialiased",
         fontMono.variable,
         "font-sans",
-        montserrat.variable,
-        geistHeading.variable
+        manrope.variable,
+        plusJakartaSans.variable
       )}
       lang="en"
       suppressHydrationWarning
