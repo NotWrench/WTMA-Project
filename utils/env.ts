@@ -7,6 +7,10 @@ const serverEnvSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
+  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID cannot be empty"),
+  GOOGLE_CLIENT_SECRET: z
+    .string()
+    .min(1, "GOOGLE_CLIENT_SECRET cannot be empty"),
 });
 
 const parsedEnv = serverEnvSchema.safeParse(process.env);
