@@ -14,7 +14,7 @@ const testimonials = [
     image: "1438761681033-6461ffad8d80",
   },
   {
-    body: "Serene Expense helped me clear my credit card debt without the usual stress. It's truly a tactile experience.",
+    body: "Trackami helped me clear my credit card debt without the usual stress. It's truly a tactile experience.",
     author: "Marcus Thorne",
     role: "Product Manager",
     image: "1472099645785-5658abf4ff4e",

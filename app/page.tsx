@@ -1,12 +1,28 @@
+import { headers } from "next/headers";
 import Link from "next/link";
-
+import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { getDashboardUser } from "@/components/dashboard/get-dashboard-user";
 import { CtaSection } from "@/components/home/cta-section";
 import { FeaturesSection } from "@/components/home/features-section";
 import { HeroSection } from "@/components/home/hero-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { TactileNoise } from "@/components/ui/tactile-noise";
+import { auth } from "@/lib/auth";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session) {
+    return (
+      <DashboardShell user={getDashboardUser(session)}>
+        <DashboardOverview />
+      </DashboardShell>
+    );
+  }
+
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-foreground">
       <TactileNoise />
