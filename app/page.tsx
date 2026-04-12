@@ -1,57 +1,39 @@
-import { ArrowRightIcon, LeafIcon, WalletIcon } from "lucide-react";
+import { CtaSection } from "@/components/home/cta-section";
+import { FeaturesSection } from "@/components/home/features-section";
+import { HeroSection } from "@/components/home/hero-section";
+import { TestimonialsSection } from "@/components/home/testimonials-section";
+import { TactileNoise } from "@/components/ui/tactile-noise";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { LucideThemedIcon } from "@/components/ui/lucide-icon";
-import { Progress } from "@/components/ui/progress";
-
-export default function Page() {
-  const monthlyHealthScore = 72;
-
+export default function HomePage() {
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-3xl items-center p-6">
-      <Card className="w-full">
-        <CardHeader className="gap-3">
-          <CardTitle className="flex items-center gap-2">
-            <LucideThemedIcon icon={LeafIcon} tone="primary" />
-            Serene Ledger Theme Applied
-          </CardTitle>
-          <CardDescription>
-            Colors, typography, buttons, progress bars, and Lucide icon styling
-            now follow the Stitch design system.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="inline-flex items-center gap-2 font-medium text-foreground">
-                <LucideThemedIcon icon={WalletIcon} tone="secondary" />
-                Monthly health
-              </span>
-              <span className="font-mono text-muted-foreground text-xs">
-                {monthlyHealthScore}%
-              </span>
-            </div>
-            <Progress value={monthlyHealthScore} />
-          </div>
+    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-foreground">
+      <TactileNoise />
 
-          <div className="flex flex-wrap gap-2">
-            <Button>
-              Primary action
-              <ArrowRightIcon className="size-4" />
-            </Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="ghost">Ghost</Button>
+      <main className="relative z-10 flex w-full flex-col">
+        <HeroSection />
+        <FeaturesSection />
+        <TestimonialsSection />
+        <CtaSection />
+      </main>
+
+      <footer className="relative z-10 w-full border-border/20 border-t bg-background/80 py-12 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between px-6 md:flex-row lg:px-8">
+          <p className="font-heading font-medium text-foreground/80 text-sm">
+            © 2024 Serene Expense Tracker. All rights reserved.
+          </p>
+          <div className="mt-4 flex gap-6 text-muted-foreground text-sm md:mt-0">
+            <a className="transition-colors hover:text-foreground" href="/">
+              Privacy Policy
+            </a>
+            <a className="transition-colors hover:text-foreground" href="/">
+              Terms of Service
+            </a>
+            <a className="transition-colors hover:text-foreground" href="/">
+              Contact Support
+            </a>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </footer>
     </div>
   );
 }

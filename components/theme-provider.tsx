@@ -15,8 +15,8 @@ function ThemeProvider({
       enableSystem={false}
       {...props}
     >
-      <ThemeHotkey />
       {children}
+      <ThemeHotkey />
     </NextThemesProvider>
   );
 }
