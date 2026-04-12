@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
+import { Quote } from "lucide-react";
 import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
 import { useRef } from "react";
@@ -47,27 +47,6 @@ export function TestimonialsSection() {
               Join thousands who have discovered that financial health is the
               cornerstone of mental clarity.
             </p>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.2}>
-            <div className="mt-8 flex gap-3">
-              <motion.button
-                aria-label="Previous Testimonial"
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </motion.button>
-              <motion.button
-                aria-label="Next Testimonial"
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ArrowRight className="h-5 w-5" />
-              </motion.button>
-            </div>
           </ScrollReveal>
         </div>
 
