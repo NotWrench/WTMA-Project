@@ -1,8 +1,19 @@
+import { headers } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AuthContainer } from "@/components/auth/auth-container";
 import { TactileNoise } from "@/components/ui/tactile-noise";
+import { auth } from "@/lib/auth";
 
-export default function AuthPage() {
+export default async function AuthPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session) {
+    redirect("/");
+  }
+
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-background antialiased selection:bg-primary/20 selection:text-foreground lg:flex-row">
       <TactileNoise />
@@ -10,7 +21,7 @@ export default function AuthPage() {
       {/* Left Abstract / Branding Side */}
       <div className="relative hidden w-full flex-col items-start justify-center overflow-hidden border-border/20 border-r bg-surface-container-low/20 p-12 lg:flex lg:w-1/2 xl:p-24">
         {/* Soft decorative glow */}
-        <div className="absolute top-0 left-0 -z-10 h-full w-full bg-[radial-gradient(circle_at_left_center,_var(--color-primary-dim)_0%,_transparent_60%)] opacity-10 dark:opacity-20" />
+        <div className="absolute top-0 left-0 -z-10 h-full w-full bg-[radial-gradient(circle_at_left_center,var(--color-primary-dim)_0%,transparent_60%)] opacity-10 dark:opacity-20" />
 
         <Link
           className="absolute top-12 left-12 font-heading font-medium text-foreground text-xl transition-opacity hover:opacity-80 xl:top-24 xl:left-24"

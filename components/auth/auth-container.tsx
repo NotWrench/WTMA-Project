@@ -1,15 +1,128 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+
+type PendingAction = "login" | "signup" | "social" | null;
+
+const FALLBACK_AUTH_ERROR =
+  "We couldn't complete that request. Please try again.";
+
+const getAuthErrorMessage = (error: unknown): string => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+
+  return FALLBACK_AUTH_ERROR;
+};
 
 export function AuthContainer() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const toggleAuth = () => setIsLogin((prev) => !prev);
+  const [loginForm, setLoginForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [signupForm, setSignupForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const isSubmitting = pendingAction !== null;
+
+  const toggleAuth = () => {
+    setErrorMessage(null);
+    setIsLogin((prev) => !prev);
+  };
+
+  const handleEmailSignIn = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
+    setPendingAction("login");
+
+    try {
+      const { error } = await authClient.signIn.email({
+        email: loginForm.email,
+        password: loginForm.password,
+        callbackURL: "/",
+      });
+
+      if (error) {
+        setErrorMessage(getAuthErrorMessage(error));
+        setPendingAction(null);
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+      setPendingAction(null);
+    }
+  };
+
+  const handleEmailSignUp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
+    setPendingAction("signup");
+
+    try {
+      const { error } = await authClient.signUp.email({
+        name: signupForm.name,
+        email: signupForm.email,
+        password: signupForm.password,
+        callbackURL: "/",
+      });
+
+      if (error) {
+        setErrorMessage(getAuthErrorMessage(error));
+        setPendingAction(null);
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+      setPendingAction(null);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setErrorMessage(null);
+    setPendingAction("social");
+
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+
+      if (error) {
+        setErrorMessage(getAuthErrorMessage(error));
+        setPendingAction(null);
+      }
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+      setPendingAction(null);
+    }
+  };
 
   // Simple SVG for Google logo
   const GoogleIcon = (
@@ -65,10 +178,14 @@ export function AuthContainer() {
 
               <Button
                 className="w-full justify-center bg-background/50 hover:bg-background/80"
+                disabled={isSubmitting}
+                onClick={handleGoogleAuth}
                 variant="outline"
               >
                 {GoogleIcon}
-                Sign in with Google
+                {pendingAction === "social"
+                  ? "Redirecting to Google..."
+                  : "Sign in with Google"}
               </Button>
 
               <div className="relative flex items-center py-2">
@@ -79,13 +196,26 @@ export function AuthContainer() {
                 <div className="grow border-border/40 border-t" />
               </div>
 
-              <form className="flex flex-col gap-4">
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={handleEmailSignIn}
+              >
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="email-login">Email</Label>
                   <Input
+                    autoComplete="email"
+                    disabled={isSubmitting}
                     id="email-login"
+                    onChange={(event) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))
+                    }
                     placeholder="name@example.com"
+                    required
                     type="email"
+                    value={loginForm.email}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -99,11 +229,36 @@ export function AuthContainer() {
                       Forgot Password?
                     </button>
                   </div>
-                  <Input id="password-login" type="password" />
+                  <Input
+                    autoComplete="current-password"
+                    disabled={isSubmitting}
+                    id="password-login"
+                    minLength={8}
+                    onChange={(event) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        password: event.target.value,
+                      }))
+                    }
+                    required
+                    type="password"
+                    value={loginForm.password}
+                  />
                 </div>
-
-                <Button className="mt-2 w-full">Sign In</Button>
+                <Button
+                  className="mt-2 w-full"
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {pendingAction === "login" ? "Signing in..." : "Sign In"}
+                </Button>
               </form>
+
+              {errorMessage ? (
+                <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-center text-destructive text-sm">
+                  {errorMessage}
+                </p>
+              ) : null}
 
               <p className="text-center text-muted-foreground text-sm">
                 Don&apos;t have an account?{" "}
@@ -136,10 +291,14 @@ export function AuthContainer() {
 
               <Button
                 className="w-full justify-center bg-background/50 hover:bg-background/80"
+                disabled={isSubmitting}
+                onClick={handleGoogleAuth}
                 variant="outline"
               >
                 {GoogleIcon}
-                Sign up with Google
+                {pendingAction === "social"
+                  ? "Redirecting to Google..."
+                  : "Sign up with Google"}
               </Button>
 
               <div className="relative flex items-center py-2">
@@ -150,26 +309,81 @@ export function AuthContainer() {
                 <div className="grow border-border/40 border-t" />
               </div>
 
-              <form className="flex flex-col gap-4">
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={handleEmailSignUp}
+              >
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="name-signup">Full Name</Label>
-                  <Input id="name-signup" placeholder="John Doe" type="text" />
+                  <Input
+                    autoComplete="name"
+                    disabled={isSubmitting}
+                    id="name-signup"
+                    onChange={(event) =>
+                      setSignupForm((prev) => ({
+                        ...prev,
+                        name: event.target.value,
+                      }))
+                    }
+                    placeholder="John Doe"
+                    required
+                    type="text"
+                    value={signupForm.name}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="email-signup">Email</Label>
                   <Input
+                    autoComplete="email"
+                    disabled={isSubmitting}
                     id="email-signup"
+                    onChange={(event) =>
+                      setSignupForm((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))
+                    }
                     placeholder="name@example.com"
+                    required
                     type="email"
+                    value={signupForm.email}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="password-signup">Password</Label>
-                  <Input id="password-signup" type="password" />
+                  <Input
+                    autoComplete="new-password"
+                    disabled={isSubmitting}
+                    id="password-signup"
+                    minLength={8}
+                    onChange={(event) =>
+                      setSignupForm((prev) => ({
+                        ...prev,
+                        password: event.target.value,
+                      }))
+                    }
+                    required
+                    type="password"
+                    value={signupForm.password}
+                  />
                 </div>
 
-                <Button className="mt-2 w-full">Sign Up</Button>
+                <Button
+                  className="mt-2 w-full"
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {pendingAction === "signup"
+                    ? "Creating account..."
+                    : "Sign Up"}
+                </Button>
               </form>
+
+              {errorMessage ? (
+                <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-center text-destructive text-sm">
+                  {errorMessage}
+                </p>
+              ) : null}
 
               <p className="text-center text-muted-foreground text-sm">
                 Already have an account?{" "}

@@ -80,6 +80,7 @@ export function HeroSection() {
                     alt={`User ${i + 1}`}
                     className="object-cover"
                     fill
+                    sizes="40px"
                     src={`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&q=80&w=100`}
                   />
                 </div>
@@ -113,6 +114,7 @@ export function HeroSection() {
               alt="Product UI Preview"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
               fill
+              sizes="(min-width: 1280px) 560px, (min-width: 1024px) 45vw, (min-width: 768px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&q=80&w=800"
             />
           </div>

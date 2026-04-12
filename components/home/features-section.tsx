@@ -186,6 +186,7 @@ export function FeaturesSection() {
                   alt="Mobile View"
                   className="object-cover"
                   fill
+                  sizes="(min-width: 768px) 33vw, 100vw"
                   src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=400"
                 />
               </motion.div>
