@@ -18,26 +18,31 @@ const navigation = [
     href: "/",
     icon: LayoutDashboard,
     label: "Dashboard",
+    matches: (pathname: string) => pathname === "/",
   },
   {
     href: "/dashboard",
     icon: Wallet,
     label: "Expenses",
+    matches: (pathname: string) => pathname === "/dashboard",
   },
   {
     href: "/dashboard",
     icon: WalletCards,
     label: "Budgets",
+    matches: (pathname: string) => pathname === "/dashboard",
   },
   {
     href: "/dashboard",
     icon: BarChart3,
     label: "Reports",
+    matches: (pathname: string) => pathname === "/dashboard",
   },
   {
-    href: "/dashboard",
+    href: "/settings",
     icon: Settings,
     label: "Settings",
+    matches: (pathname: string) => pathname.startsWith("/settings"),
   },
 ] as const;
 
@@ -59,8 +64,6 @@ const getInitials = (name: string): string => {
 
 export function DashboardSidebar({ user }: { user: DashboardUser }) {
   const pathname = usePathname();
-  const isDashboardRoute =
-    pathname === "/" || pathname.startsWith("/dashboard");
 
   return (
     <>
@@ -77,9 +80,9 @@ export function DashboardSidebar({ user }: { user: DashboardUser }) {
           </Avatar>
         </div>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {navigation.slice(0, 4).map((item, index) => {
+          {navigation.map((item) => {
             const Icon = item.icon;
-            const isActive = index === 0 && isDashboardRoute;
+            const isActive = item.matches(pathname);
 
             return (
               <Link
@@ -108,9 +111,9 @@ export function DashboardSidebar({ user }: { user: DashboardUser }) {
         </div>
 
         <nav className="mt-8 flex-1 space-y-1.5">
-          {navigation.map((item, index) => {
+          {navigation.map((item) => {
             const Icon = item.icon;
-            const isActive = index === 0 && isDashboardRoute;
+            const isActive = item.matches(pathname);
 
             return (
               <Link

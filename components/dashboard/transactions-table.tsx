@@ -10,6 +10,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Filter, Home, Search, ShoppingCart, Utensils } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -283,7 +284,17 @@ export function DashboardTransactionsTable() {
         }}
       >
         <DataGridContainer border={false} className="bg-transparent p-0 ring-0">
-          <DataGridTable />
+          <AnimatePresence initial={false} mode="wait">
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              initial={{ opacity: 0, y: 6 }}
+              key={`${pagination.pageIndex}-${pagination.pageSize}`}
+              transition={{ duration: 0.22, ease: "easeInOut" }}
+            >
+              <DataGridTable />
+            </motion.div>
+          </AnimatePresence>
         </DataGridContainer>
         <DataGridPagination className="mt-3" />
       </DataGrid>

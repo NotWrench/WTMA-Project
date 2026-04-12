@@ -36,7 +36,7 @@ function Slider({
       defaultValue={defaultValue}
       max={max}
       min={min}
-      thumbAlignment="edge"
+      thumbAlignment="edge-client-only"
       value={value}
       {...props}
     >

@@ -1,14 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  type TooltipProps,
-  XAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis } from "recharts";
 import { STITCH_COLORS } from "@/components/dashboard/stitch-colors";
 import {
   type ChartConfig,
@@ -24,7 +17,7 @@ const monthlyTrendData = [
   { label: "Aug", spending: 23_250 },
   { label: "Sep", spending: 16_800 },
   { label: "Oct", spending: 24_200 },
-] as const;
+] satisfies TrendDataPoint[];
 
 const weeklyTrendData = [
   { label: "Mon", spending: 4200 },
@@ -34,7 +27,12 @@ const weeklyTrendData = [
   { label: "Fri", spending: 4700 },
   { label: "Sat", spending: 6200 },
   { label: "Sun", spending: 3900 },
-] as const;
+] satisfies TrendDataPoint[];
+
+interface TrendDataPoint {
+  label: string;
+  spending: number;
+}
 
 export type SpendingTrendRange = "weekly" | "monthly";
 
@@ -48,18 +46,13 @@ const chartConfig = {
 const formatCurrency = (value: number): string =>
   `₹ ${value.toLocaleString("en-IN")}`;
 
-const isTooltipPayload = (
-  payload: TooltipProps<number, string>["payload"]
-): payload is Array<{ value: number }> => {
-  return Array.isArray(payload) && payload.length > 0;
-};
-
 export function DashboardSpendingTrendChart({
   range,
 }: {
   range: SpendingTrendRange;
 }) {
-  const trendData = range === "weekly" ? weeklyTrendData : monthlyTrendData;
+  const trendData: TrendDataPoint[] =
+    range === "weekly" ? weeklyTrendData : monthlyTrendData;
   const latestLabel = trendData.at(-1)?.label;
 
   return (
@@ -84,13 +77,6 @@ export function DashboardSpendingTrendChart({
               content={<ChartTooltipContent hideIndicator />}
               cursor={{ fill: "rgba(79, 100, 91, 0.08)" }}
               formatter={(value) => formatCurrency(Number(value))}
-              labelFormatter={(label, payload) => {
-                if (!isTooltipPayload(payload)) {
-                  return String(label);
-                }
-
-                return `${String(label)} · ${formatCurrency(payload[0].value)}`;
-              }}
             />
             <Bar
               animationDuration={400}

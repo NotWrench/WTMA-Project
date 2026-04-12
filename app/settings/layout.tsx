@@ -5,7 +5,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getDashboardUser } from "@/components/dashboard/get-dashboard-user";
 import { auth } from "@/lib/auth";
 
-export default async function DashboardLayout({
+export default async function SettingsLayout({
   children,
 }: {
   children: ReactNode;
@@ -18,7 +18,7 @@ export default async function DashboardLayout({
     redirect("/auth");
   }
 
-  const user = getDashboardUser(session);
-
-  return <DashboardShell user={user}>{children}</DashboardShell>;
+  return (
+    <DashboardShell user={getDashboardUser(session)}>{children}</DashboardShell>
+  );
 }
