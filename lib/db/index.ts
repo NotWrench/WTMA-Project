@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
-import { env } from "../../utils/env";
+import { databaseConnectionUrl } from "../../utils/env";
 import {
   account,
   accountRelations,
@@ -11,16 +11,6 @@ import {
   userRelations,
   verification,
 } from "./schema";
-
-const globalForDb = globalThis as typeof globalThis & {
-  wtmaPool?: Pool;
-};
-
-const pool =
-  globalForDb.wtmaPool ??
-  new Pool({
-    connectionString: env.DATABASE_URL,
-  });
 
 const schema = {
   user,
@@ -32,9 +22,6 @@ const schema = {
   accountRelations,
 };
 
-if (env.NODE_ENV !== "production") {
-  globalForDb.wtmaPool = pool;
-}
+const client = neon(databaseConnectionUrl);
 
-export const db = drizzle(pool, { schema });
-export { pool };
+export const db = drizzle({ client, schema });

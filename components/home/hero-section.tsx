@@ -41,15 +41,15 @@ export function HeroSection() {
         <ScrollReveal duration={1.2} yOffset={60}>
           <h1 className="font-extrabold text-5xl text-primary leading-[1.1] tracking-tight lg:text-7xl">
             The Art of <br />
-            <span className="text-secondary italic">Tactile Archiving.</span>
+            <span className="text-secondary italic">Trackami.</span>
           </h1>
         </ScrollReveal>
 
         <ScrollReveal delay={0.2} duration={1} yOffset={40}>
           <p className="max-w-lg font-light text-muted-foreground text-xl leading-relaxed">
-            Experience a meditative approach to personal finance. Tactile
-            Archive turns expense tracking into a serene ritual of
-            self-awareness and intentional living.
+            Experience a meditative approach to personal finance. Trackami turns
+            expense tracking into a serene ritual of self-awareness and
+            intentional living.
           </p>
         </ScrollReveal>
 

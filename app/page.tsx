@@ -21,7 +21,7 @@ export default function HomePage() {
       <footer className="relative z-10 w-full border-border/20 border-t bg-background/80 py-12 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between px-6 md:flex-row lg:px-8">
           <p className="font-heading font-medium text-foreground/80 text-sm">
-            © 2024 Serene Expense Tracker. All rights reserved.
+            © 2024 Trackami. All rights reserved.
           </p>
           <div className="mt-4 flex gap-6 text-muted-foreground text-sm md:mt-0">
             <Link className="transition-colors hover:text-foreground" href="/">

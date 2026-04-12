@@ -16,7 +16,7 @@ export default function AuthPage() {
           className="absolute top-12 left-12 font-heading font-medium text-foreground text-xl transition-opacity hover:opacity-80 xl:top-24 xl:left-24"
           href="/"
         >
-          Tactile<span className="text-primary/80 italic">Archive</span>.
+          Track<span className="text-primary/80 italic">ami</span>.
         </Link>
 
         <div className="z-10 mt-20 max-w-lg">
@@ -31,8 +31,8 @@ export default function AuthPage() {
 
           <blockquote className="mt-16 border-primary/40 border-l-2 pl-6">
             <p className="font-heading font-light text-foreground/90 text-xl italic leading-relaxed">
-              &ldquo;The most organized I&apos;ve felt in years. Tactile Archive
-              is a breath of fresh air for my creative process.&rdquo;
+              &ldquo;The most organized I&apos;ve felt in years. Trackami is a
+              breath of fresh air for my creative process.&rdquo;
             </p>
           </blockquote>
         </div>
@@ -45,7 +45,7 @@ export default function AuthPage() {
           className="mb-12 font-heading font-medium text-2xl text-foreground lg:hidden"
           href="/"
         >
-          Tactile<span className="text-primary/80 italic">Archive</span>.
+          Track<span className="text-primary/80 italic">ami</span>.
         </Link>
 
         <AuthContainer />

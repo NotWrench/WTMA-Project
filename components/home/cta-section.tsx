@@ -34,7 +34,7 @@ export function CtaSection() {
 
           <ScrollReveal delay={0.4}>
             <p className="relative z-10 mx-auto mb-12 max-w-2xl text-balance font-light text-lg text-primary-foreground/80 leading-relaxed sm:text-xl">
-              Join Tactile Archive and transform the way you interact with your
+              Join Trackami and transform the way you interact with your
               finances. Enter a world of clarity and intention.
             </p>
           </ScrollReveal>
