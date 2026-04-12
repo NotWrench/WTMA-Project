@@ -1,13 +1,14 @@
+/* biome-ignore-all lint/a11y/noLabelWithoutControl: Reusable label wrapper; association is provided by caller via htmlFor or nested control. */
+
 "use client";
 
-import { Label as LabelPrimitive } from "@base-ui/react/label";
 import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
   return (
-    <LabelPrimitive
+    <label
       className={cn(
         "flex select-none items-center gap-2 font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50",
         className

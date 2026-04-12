@@ -1,3 +1,9 @@
+"use client";
+
+import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
+import { motion, useScroll, useTransform } from "motion/react";
+import Image from "next/image";
+import { useRef } from "react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 const testimonials = [
@@ -5,52 +11,106 @@ const testimonials = [
     body: "I never thought tracking expenses could be so therapeutic. The design alone keeps me coming back every day.",
     author: "Sarah Jenkins",
     role: "Interior Designer",
+    image: "1438761681033-6461ffad8d80",
   },
   {
     body: "Serene Expense helped me clear my credit card debt without the usual stress. It's truly a tactile experience.",
     author: "Marcus Thorne",
     role: "Product Manager",
+    image: "1472099645785-5658abf4ff4e",
   },
 ];
 
 export function TestimonialsSection() {
-  return (
-    <section className="relative overflow-hidden py-32">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--color-primary-dim)_0%,_transparent_70%)] opacity-5 dark:opacity-10" />
+  const containerRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
 
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <ScrollReveal>
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-heading font-medium text-3xl tracking-tight sm:text-4xl">
+  const y1 = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [150, -150]);
+
+  return (
+    <section
+      className="mx-auto max-w-7xl overflow-hidden px-6 py-24 lg:px-8"
+      ref={containerRef}
+    >
+      <div className="flex flex-col items-start gap-16 md:flex-row">
+        {/* Left Side: Title & Nav */}
+        <div className="relative z-10 md:w-1/3">
+          <ScrollReveal>
+            <h2 className="mb-6 font-bold font-heading text-4xl text-primary tracking-tight sm:text-5xl">
               Voices of Serenity
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="font-light text-lg text-muted-foreground leading-relaxed">
               Join thousands who have discovered that financial health is the
               cornerstone of mental clarity.
             </p>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
 
-        <div className="mx-auto mt-16 max-w-2xl lg:mt-24 lg:max-w-none">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            {testimonials.map((testimonial, idx) => (
-              <ScrollReveal delay={idx * 0.2} key={testimonial.author}>
-                <div className="justifies-between flex h-full flex-col rounded-xl border border-border/30 bg-card/40 p-10 backdrop-blur-md transition-all duration-500 hover:border-primary/40 hover:bg-card/60">
-                  <blockquote className="flex-auto font-heading font-light text-foreground/90 text-xl leading-relaxed">
-                    &ldquo;{testimonial.body}&rdquo;
-                  </blockquote>
-                  <div className="mt-8 border-border/20 border-t pt-6">
-                    <div className="font-medium text-foreground">
+          <ScrollReveal delay={0.2}>
+            <div className="mt-8 flex gap-3">
+              <motion.button
+                aria-label="Previous Testimonial"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </motion.button>
+              <motion.button
+                aria-label="Next Testimonial"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ArrowRight className="h-5 w-5" />
+              </motion.button>
+            </div>
+          </ScrollReveal>
+        </div>
+
+        {/* Right Side: Cards */}
+        <div className="relative z-0 grid grid-cols-1 gap-8 sm:grid-cols-2 md:w-2/3">
+          {testimonials.map((testimonial, idx) => {
+            const yTransform = idx === 0 ? y1 : y2;
+
+            return (
+              <motion.div
+                className={`relative rounded-3xl border border-border/50 bg-surface-container-high/50 p-8 shadow-sm backdrop-blur-md transition-shadow hover:shadow-md dark:bg-card/40 ${idx === 1 ? "mt-0 sm:mt-12" : ""}`}
+                initial={{ opacity: 0, y: 50 }}
+                key={testimonial.author}
+                style={{ y: yTransform }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileInView={{ opacity: 1 }}
+              >
+                <Quote className="absolute -top-4 -left-4 h-12 w-12 rotate-180 text-secondary/20" />
+                <p className="relative z-10 mb-8 font-light text-foreground text-lg italic leading-relaxed">
+                  &quot;{testimonial.body}&quot;
+                </p>
+                <div className="relative z-10 flex items-center gap-4">
+                  <div className="relative h-12 w-12 overflow-hidden rounded-full border border-border/50">
+                    <Image
+                      alt={testimonial.author}
+                      className="object-cover"
+                      fill
+                      src={`https://images.unsplash.com/photo-${testimonial.image}?auto=format&fit=crop&q=80&w=100`}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-bold font-heading text-primary">
                       {testimonial.author}
-                    </div>
-                    <div className="font-light text-muted-foreground text-sm">
+                    </p>
+                    <p className="mt-1 font-medium text-muted-foreground text-xs uppercase tracking-wider">
                       {testimonial.role}
-                    </div>
+                    </p>
                   </div>
                 </div>
-              </ScrollReveal>
-            ))}
-          </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

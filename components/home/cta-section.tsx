@@ -1,35 +1,61 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export function CtaSection() {
   return (
-    <section className="relative overflow-hidden border-border/40 border-t py-32 sm:py-40">
-      <div className="absolute inset-0 -z-10 translate-y-[20%]">
-        <div className="absolute bottom-0 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-[100%] bg-primary/20 blur-[120px]" />
-      </div>
+    <section className="px-6 py-24 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <motion.div
+          className="relative overflow-hidden rounded-[3rem] bg-primary p-12 text-center text-primary-foreground shadow-2xl md:p-20"
+          initial={{ opacity: 0, scale: 0.95, y: 40 }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "-100px" }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+        >
+          {/* Subtle Paper Texture Overlay */}
+          <div
+            className="absolute inset-0 opacity-10 mix-blend-overlay"
+            style={{
+              backgroundImage:
+                'url("https://www.transparenttextures.com/patterns/natural-paper.png")',
+            }}
+          />
 
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-heading font-medium text-4xl tracking-tight sm:text-5xl">
-            Start Your Mindful <br />
-            <span className="text-primary/80 italic">Journey</span> Today.
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl font-light text-lg text-muted-foreground leading-relaxed">
-            Join Serene Expense and transform the way you interact with your
-            finances.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
-            <motion.button
-              className="rounded-full bg-primary px-8 py-3.5 font-medium text-primary-foreground text-sm tracking-wide shadow-lg transition-colors hover:bg-primary-dim focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Enter the Archive
-            </motion.button>
-          </div>
-        </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <h2 className="relative z-10 mx-auto mb-8 text-balance font-bold font-heading text-4xl tracking-tight sm:text-5xl md:text-6xl">
+              Start Your Mindful <br />{" "}
+              <span className="font-light italic">Journey</span> Today.
+            </h2>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.4}>
+            <p className="relative z-10 mx-auto mb-12 max-w-2xl text-balance font-light text-lg text-primary-foreground/80 leading-relaxed sm:text-xl">
+              Join Tactile Archive and transform the way you interact with your
+              finances. Enter a world of clarity and intention.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.6}>
+            <div className="relative z-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  className="group flex items-center justify-center gap-2 rounded-full bg-background px-10 py-4 font-bold text-lg text-primary shadow-lg transition-colors hover:bg-background/90"
+                  href="/auth"
+                >
+                  Create Free Account
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </motion.div>
+            </div>
+          </ScrollReveal>
+        </motion.div>
       </div>
     </section>
   );

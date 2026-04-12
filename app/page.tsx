@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CtaSection } from "@/components/home/cta-section";
 import { FeaturesSection } from "@/components/home/features-section";
 import { HeroSection } from "@/components/home/hero-section";
@@ -22,15 +24,15 @@ export default function HomePage() {
             © 2024 Serene Expense Tracker. All rights reserved.
           </p>
           <div className="mt-4 flex gap-6 text-muted-foreground text-sm md:mt-0">
-            <a className="transition-colors hover:text-foreground" href="/">
+            <Link className="transition-colors hover:text-foreground" href="/">
               Privacy Policy
-            </a>
-            <a className="transition-colors hover:text-foreground" href="/">
+            </Link>
+            <Link className="transition-colors hover:text-foreground" href="/">
               Terms of Service
-            </a>
-            <a className="transition-colors hover:text-foreground" href="/">
+            </Link>
+            <Link className="transition-colors hover:text-foreground" href="/">
               Contact Support
-            </a>
+            </Link>
           </div>
         </div>
       </footer>
