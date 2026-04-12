@@ -22,7 +22,7 @@ export function TactileNoise({ className, opacity = 0.04 }: TactileNoiseProps) {
   return (
     <div
       className={cn(
-        "pointer-events-none fixed inset-0 z-50 h-[100vh] w-[100vw] overflow-hidden",
+        "pointer-events-none fixed inset-0 z-50 h-screen w-screen overflow-hidden",
         className
       )}
       style={{ opacity }}

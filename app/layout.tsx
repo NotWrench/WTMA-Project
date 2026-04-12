@@ -1,10 +1,10 @@
-import { Geist_Mono, Manrope, Playfair_Display } from "next/font/google";
+import { Geist_Mono, Manrope, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
-const playfairDisplay = Playfair_Display({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-heading",
 });
@@ -28,7 +28,7 @@ export default function RootLayout({
         fontMono.variable,
         "font-sans",
         manrope.variable,
-        playfairDisplay.variable
+        plusJakartaSans.variable
       )}
       lang="en"
       suppressHydrationWarning
