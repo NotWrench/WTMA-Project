@@ -14,7 +14,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTheme } from "@/components/theme-provider";
 import { BentoGrid } from "@/components/ui/bento-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,18 +27,269 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import {
+  applyIncognitoBalances,
+  applyTypographyScale,
+  readStoredIncognitoBalances,
+  readStoredTypographyScale,
+  SETTINGS_PREFERENCE_KEYS,
+} from "@/lib/settings-preferences";
 import { cn } from "@/lib/utils";
 
 type InterfaceMode = "light" | "dark";
+type CurrencyCode = "EUR" | "GBP" | "INR" | "USD";
+
+const DEFAULT_LANGUAGE = "en-US";
+const DEFAULT_CURRENCY: CurrencyCode = "INR";
+const TRANSACTION_EXPORT_ROWS = [
+  {
+    amount: 2450,
+    category: "Electronics",
+    date: "2024-10-14",
+    merchant: "Amazon India",
+    status: "Completed",
+  },
+  {
+    amount: 850,
+    category: "Lifestyle",
+    date: "2024-10-12",
+    merchant: "Blue Tokai Coffee",
+    status: "Completed",
+  },
+  {
+    amount: 35_000,
+    category: "Essential",
+    date: "2024-10-05",
+    merchant: "Property Rent",
+    status: "Scheduled",
+  },
+] as const;
 
 const settingsCardClassName =
   "rounded-3xl border border-border/20 p-6 shadow-[0_12px_30px_rgba(79,100,91,0.05)]";
 
 export function SettingsBentoView() {
+  const { resolvedTheme, setTheme } = useTheme();
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("light");
   const [typographyScale, setTypographyScale] = useState<number[]>([3]);
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
+  const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
   const [biometricLock, setBiometricLock] = useState(true);
   const [incognitoBalances, setIncognitoBalances] = useState(false);
+  const [isPurgeArmed, setIsPurgeArmed] = useState(false);
+
+  useEffect(() => {
+    setInterfaceMode(resolvedTheme);
+  }, [resolvedTheme]);
+
+  useEffect(() => {
+    const storedLanguage = window.localStorage.getItem(
+      SETTINGS_PREFERENCE_KEYS.language
+    );
+    const storedCurrency = window.localStorage.getItem(
+      SETTINGS_PREFERENCE_KEYS.currency
+    );
+    const storedScale = readStoredTypographyScale();
+    const storedIncognito = readStoredIncognitoBalances();
+
+    setLanguage(storedLanguage || DEFAULT_LANGUAGE);
+    setCurrency(
+      storedCurrency === "USD" ||
+        storedCurrency === "EUR" ||
+        storedCurrency === "GBP"
+        ? storedCurrency
+        : DEFAULT_CURRENCY
+    );
+    setTypographyScale([storedScale]);
+    setIncognitoBalances(storedIncognito);
+
+    applyTypographyScale(storedScale);
+    applyIncognitoBalances(storedIncognito);
+    document.documentElement.lang = storedLanguage || DEFAULT_LANGUAGE;
+  }, []);
+
+  const formattedBalancePreview = useMemo(() => {
+    return new Intl.NumberFormat(language, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(84_250);
+  }, [currency, language]);
+
+  const saveLanguage = (nextLanguage: string | null) => {
+    if (!nextLanguage) {
+      return;
+    }
+
+    setLanguage(nextLanguage);
+    window.localStorage.setItem(
+      SETTINGS_PREFERENCE_KEYS.language,
+      nextLanguage
+    );
+    document.documentElement.lang = nextLanguage;
+  };
+
+  const saveCurrency = (nextCurrency: string | null) => {
+    if (!nextCurrency) {
+      return;
+    }
+
+    const normalizedCurrency: CurrencyCode =
+      nextCurrency === "USD" || nextCurrency === "EUR" || nextCurrency === "GBP"
+        ? nextCurrency
+        : "INR";
+
+    setCurrency(normalizedCurrency);
+    window.localStorage.setItem(
+      SETTINGS_PREFERENCE_KEYS.currency,
+      normalizedCurrency
+    );
+  };
+
+  const saveTypographyScale = (value: number | readonly number[]) => {
+    const normalizedValue = Array.isArray(value) ? value[0] : value;
+
+    setTypographyScale([normalizedValue]);
+    window.localStorage.setItem(
+      SETTINGS_PREFERENCE_KEYS.typographyScale,
+      `${normalizedValue}`
+    );
+    applyTypographyScale(normalizedValue);
+  };
+
+  const saveIncognitoBalances = (enabled: boolean) => {
+    setIncognitoBalances(enabled);
+    window.localStorage.setItem(
+      SETTINGS_PREFERENCE_KEYS.incognitoBalances,
+      `${enabled}`
+    );
+    applyIncognitoBalances(enabled);
+  };
+
+  const downloadFile = (filename: string, content: string, type: string) => {
+    const blob = new Blob([content], { type });
+    const downloadUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = downloadUrl;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(downloadUrl);
+  };
+
+  const handleExportCsv = () => {
+    const csvRows = [
+      ["Date", "Merchant", "Category", "Amount", "Status"],
+      ...TRANSACTION_EXPORT_ROWS.map((row) => [
+        row.date,
+        row.merchant,
+        row.category,
+        row.amount.toString(),
+        row.status,
+      ]),
+    ];
+    const csvContent = csvRows
+      .map((row) =>
+        row.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")
+      )
+      .join("\n");
+
+    downloadFile(
+      "trackami-transactions.csv",
+      csvContent,
+      "text/csv;charset=utf-8;"
+    );
+  };
+
+  const handleExportPdf = () => {
+    const reportWindow = window.open(
+      "",
+      "_blank",
+      "noopener,noreferrer,width=980,height=720"
+    );
+
+    if (!reportWindow) {
+      return;
+    }
+
+    const tableRows = TRANSACTION_EXPORT_ROWS.map(
+      (row) => `<tr>
+        <td>${row.date}</td>
+        <td>${row.merchant}</td>
+        <td>${row.category}</td>
+        <td>${new Intl.NumberFormat(language, {
+          style: "currency",
+          currency,
+          maximumFractionDigits: 2,
+        }).format(row.amount)}</td>
+        <td>${row.status}</td>
+      </tr>`
+    ).join("");
+
+    reportWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Trackami Report</title>
+          <style>
+            body { font-family: Manrope, sans-serif; margin: 24px; color: #2f342e; }
+            h1 { font-family: "Plus Jakarta Sans", sans-serif; margin-bottom: 8px; }
+            p { color: #5c605a; margin-top: 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e0e4dc; }
+            th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #5c605a; }
+          </style>
+        </head>
+        <body>
+          <h1>Trackami Transactions Report</h1>
+          <p>Generated ${new Date().toLocaleString(language)} • ${currency}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Merchant</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    reportWindow.document.close();
+    reportWindow.focus();
+    reportWindow.print();
+  };
+
+  const purgeArchiveData = () => {
+    window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.currency);
+    window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.incognitoBalances);
+    window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.language);
+    window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.theme);
+    window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.typographyScale);
+
+    setTheme("light");
+    setInterfaceMode("light");
+    setLanguage(DEFAULT_LANGUAGE);
+    setCurrency(DEFAULT_CURRENCY);
+    setTypographyScale([3]);
+    setIncognitoBalances(false);
+    document.documentElement.lang = DEFAULT_LANGUAGE;
+    applyTypographyScale(3);
+    applyIncognitoBalances(false);
+  };
+
+  const handlePurgeData = () => {
+    if (!isPurgeArmed) {
+      setIsPurgeArmed(true);
+      return;
+    }
+
+    purgeArchiveData();
+    setIsPurgeArmed(false);
+  };
 
   return (
     <section className="space-y-8">
@@ -93,7 +345,10 @@ export function SettingsBentoView() {
                           : "text-muted-foreground"
                       )}
                       key={item.value}
-                      onClick={() => setInterfaceMode(item.value)}
+                      onClick={() => {
+                        setInterfaceMode(item.value);
+                        setTheme(item.value);
+                      }}
                       type="button"
                     >
                       <Icon className="size-3.5" />
@@ -114,11 +369,7 @@ export function SettingsBentoView() {
                   className="w-full"
                   max={5}
                   min={1}
-                  onValueChange={(value) => {
-                    setTypographyScale(
-                      Array.isArray(value) ? [...value] : [value]
-                    );
-                  }}
+                  onValueChange={saveTypographyScale}
                   step={1}
                   value={typographyScale}
                 />
@@ -152,7 +403,7 @@ export function SettingsBentoView() {
               <p className="font-semibold text-[0.7rem] text-muted-foreground uppercase tracking-widest">
                 Primary Language
               </p>
-              <Select defaultValue="en-US">
+              <Select onValueChange={saveLanguage} value={language}>
                 <SelectTrigger className="w-full bg-surface-container-high">
                   <SelectValue />
                 </SelectTrigger>
@@ -169,7 +420,7 @@ export function SettingsBentoView() {
               <p className="font-semibold text-[0.7rem] text-muted-foreground uppercase tracking-widest">
                 Currency Format
               </p>
-              <Select defaultValue="INR">
+              <Select onValueChange={saveCurrency} value={currency}>
                 <SelectTrigger className="w-full bg-surface-container-high">
                   <SelectValue />
                 </SelectTrigger>
@@ -180,6 +431,15 @@ export function SettingsBentoView() {
                   <SelectItem value="GBP">GBP (£)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="rounded-xl bg-surface-container-high p-3">
+              <p className="font-medium text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+                Preview
+              </p>
+              <p className="mt-1 font-semibold text-foreground text-sm">
+                Monthly total: {formattedBalancePreview}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -213,6 +473,7 @@ export function SettingsBentoView() {
               </div>
               <Switch
                 checked={biometricLock}
+                disabled
                 onCheckedChange={setBiometricLock}
               />
             </div>
@@ -226,8 +487,22 @@ export function SettingsBentoView() {
               </div>
               <Switch
                 checked={incognitoBalances}
-                onCheckedChange={setIncognitoBalances}
+                onCheckedChange={saveIncognitoBalances}
               />
+            </div>
+
+            <div className="rounded-xl bg-surface-container-high p-3">
+              <p className="font-medium text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+                Balance Preview
+              </p>
+              <p
+                className={cn(
+                  "mt-1 font-semibold text-foreground text-sm transition-all",
+                  incognitoBalances && "select-none blur-[5px]"
+                )}
+              >
+                {formattedBalancePreview}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -254,6 +529,7 @@ export function SettingsBentoView() {
           <div className="grid grid-cols-2 gap-3">
             <button
               className="flex flex-col items-center gap-2 rounded-2xl bg-surface-container-lowest p-4 transition-colors hover:bg-white"
+              onClick={handleExportCsv}
               type="button"
             >
               <FileSpreadsheet className="size-5 text-tertiary" />
@@ -261,6 +537,7 @@ export function SettingsBentoView() {
             </button>
             <button
               className="flex flex-col items-center gap-2 rounded-2xl bg-surface-container-lowest p-4 transition-colors hover:bg-white"
+              onClick={handleExportPdf}
               type="button"
             >
               <FileText className="size-5 text-tertiary" />
@@ -268,10 +545,31 @@ export function SettingsBentoView() {
             </button>
           </div>
 
-          <Button className="w-full" type="button" variant="outline">
+          <Button
+            className={cn(
+              "w-full transition-colors",
+              isPurgeArmed &&
+                "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+            )}
+            onClick={handlePurgeData}
+            type="button"
+            variant="outline"
+          >
             <Trash2 className="size-4" />
-            Purge All Archive Data
+            {isPurgeArmed
+              ? "Tap Again To Confirm Purge"
+              : "Purge All Archive Data"}
           </Button>
+
+          {isPurgeArmed ? (
+            <button
+              className="w-full font-medium text-muted-foreground text-xs underline decoration-border underline-offset-4"
+              onClick={() => setIsPurgeArmed(false)}
+              type="button"
+            >
+              Cancel purge
+            </button>
+          ) : null}
         </motion.div>
       </BentoGrid>
     </section>

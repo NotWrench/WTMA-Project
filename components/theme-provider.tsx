@@ -10,6 +10,12 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  applyIncognitoBalances,
+  applyTypographyScale,
+  readStoredIncognitoBalances,
+  readStoredTypographyScale,
+} from "@/lib/settings-preferences";
 
 type Theme = "light" | "dark";
 
@@ -38,6 +44,9 @@ function ThemeProvider({ children }: { children: ReactNode }) {
     if (storedTheme === "light" || storedTheme === "dark") {
       setThemeState(storedTheme);
     }
+
+    applyTypographyScale(readStoredTypographyScale());
+    applyIncognitoBalances(readStoredIncognitoBalances());
   }, []);
 
   useEffect(() => {
