@@ -11,12 +11,10 @@ import {
 } from "@/components/ui/chart";
 
 const monthlyTrendData = [
-  { label: "May", spending: 12_000 },
-  { label: "Jun", spending: 18_500 },
-  { label: "Jul", spending: 15_600 },
-  { label: "Aug", spending: 23_250 },
-  { label: "Sep", spending: 16_800 },
-  { label: "Oct", spending: 24_200 },
+  { label: "Jan", spending: 15_600 },
+  { label: "Feb", spending: 23_250 },
+  { label: "Mar", spending: 16_800 },
+  { label: "Apr", spending: 24_200 },
 ] satisfies TrendDataPoint[];
 
 const weeklyTrendData = [

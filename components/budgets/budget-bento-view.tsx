@@ -54,12 +54,10 @@ const budgetCategories: CategoryBudget[] = [
 ];
 
 const monthlyPulse = [
-  { month: "Jul", utilization: 72 },
-  { month: "Aug", utilization: 78 },
-  { month: "Sep", utilization: 81 },
-  { month: "Oct", utilization: 74 },
-  { month: "Nov", utilization: 69 },
-  { month: "Dec", utilization: 77 },
+  { month: "Jan", utilization: 81 },
+  { month: "Feb", utilization: 74 },
+  { month: "Mar", utilization: 69 },
+  { month: "Apr", utilization: 77 },
 ] as const;
 
 const totalAllocated = budgetCategories.reduce(

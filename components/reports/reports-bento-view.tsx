@@ -33,12 +33,10 @@ import {
 } from "@/components/ui/chart";
 
 const spendingData = [
-  { month: "May", spending: 58, budget: 62 },
-  { month: "Jun", spending: 61, budget: 64 },
-  { month: "Jul", spending: 69, budget: 70 },
-  { month: "Aug", spending: 73, budget: 74 },
-  { month: "Sep", spending: 78, budget: 76 },
-  { month: "Oct", spending: 82, budget: 79 },
+  { month: "Jan", spending: 69, budget: 70 },
+  { month: "Feb", spending: 73, budget: 74 },
+  { month: "Mar", spending: 78, budget: 76 },
+  { month: "Apr", spending: 82, budget: 79 },
 ] as const;
 
 const chartConfig = {
@@ -115,7 +113,7 @@ export function ReportsBentoView() {
           variant="outline"
         >
           <CalendarDays className="size-4" />
-          Oct 1, 2023 - Oct 31, 2023
+          Apr 1, 2026 - Apr 13, 2026
         </Button>
 
         <div className="flex flex-wrap gap-2">
@@ -188,7 +186,7 @@ export function ReportsBentoView() {
             Monthly Spending Analysis
           </h2>
           <p className="mb-4 text-muted-foreground text-sm">
-            Spending vs budget trajectory from May to October.
+            Spending vs budget trajectory from Jan to Apr.
           </p>
 
           <ChartContainer className="h-[280px] w-full" config={chartConfig}>

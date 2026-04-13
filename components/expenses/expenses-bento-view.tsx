@@ -10,6 +10,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/ui/bento-grid";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ interface ExpenseRow {
 
 const expenses: ExpenseRow[] = [
   {
-    date: "Sep 24, 2023 • 10:42 AM",
+    date: "Apr 13, 2026 • 10:42 AM",
     merchant: "Starbucks",
     note: "Morning brew - Indiranagar",
     category: "Dining",
@@ -47,7 +48,7 @@ const expenses: ExpenseRow[] = [
     status: "Completed",
   },
   {
-    date: "Sep 23, 2023 • 02:15 PM",
+    date: "Apr 12, 2026 • 02:15 PM",
     merchant: "Amazon India",
     note: "Office stationery & supplies",
     category: "Work",
@@ -55,7 +56,7 @@ const expenses: ExpenseRow[] = [
     status: "Pending",
   },
   {
-    date: "Sep 22, 2023 • 08:00 PM",
+    date: "Apr 11, 2026 • 08:00 PM",
     merchant: "Shell",
     note: "Sedan refuel",
     category: "Transport",
@@ -63,7 +64,7 @@ const expenses: ExpenseRow[] = [
     status: "Completed",
   },
   {
-    date: "Sep 21, 2023 • 11:30 AM",
+    date: "Apr 10, 2026 • 11:30 AM",
     merchant: "Airtel Broadband",
     note: "Monthly internet subscription",
     category: "Utilities",
@@ -71,7 +72,7 @@ const expenses: ExpenseRow[] = [
     status: "Completed",
   },
   {
-    date: "Sep 20, 2023 • 06:45 PM",
+    date: "Apr 09, 2026 • 06:45 PM",
     merchant: "Apollo Pharmacy",
     note: "Prescription medicines",
     category: "Health",
@@ -87,6 +88,11 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
 });
 
 export function ExpensesBentoView() {
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>("All Categories");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("Payment Method");
+
   return (
     <section className="space-y-8">
       <header className="space-y-2">
@@ -192,28 +198,42 @@ export function ExpensesBentoView() {
               variant="outline"
             >
               <CalendarDays className="size-4" />
-              Sept 2023
+              Apr 2026
             </Button>
-            <Select defaultValue="all-categories">
+            <Select
+              onValueChange={(value) => {
+                if (value) {
+                  setSelectedCategory(value);
+                }
+              }}
+              value={selectedCategory}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-categories">All Categories</SelectItem>
-                <SelectItem value="dining">Dining</SelectItem>
-                <SelectItem value="utilities">Utilities</SelectItem>
-                <SelectItem value="work">Work</SelectItem>
+                <SelectItem value="All Categories">All Categories</SelectItem>
+                <SelectItem value="Dining">Dining</SelectItem>
+                <SelectItem value="Utilities">Utilities</SelectItem>
+                <SelectItem value="Work">Work</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="all-methods">
+            <Select
+              onValueChange={(value) => {
+                if (value) {
+                  setSelectedPaymentMethod(value);
+                }
+              }}
+              value={selectedPaymentMethod}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-methods">Payment Method</SelectItem>
-                <SelectItem value="card">Card</SelectItem>
-                <SelectItem value="upi">UPI</SelectItem>
-                <SelectItem value="bank">Bank Transfer</SelectItem>
+                <SelectItem value="Payment Method">Payment Method</SelectItem>
+                <SelectItem value="Card">Card</SelectItem>
+                <SelectItem value="UPI">UPI</SelectItem>
+                <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
               </SelectContent>
             </Select>
           </div>

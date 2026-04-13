@@ -74,11 +74,10 @@ export function FeaturesSection() {
                 <ResponsiveContainer height="100%" width="100%">
                   <BarChart
                     data={[
-                      { name: "Jan", budget: 50 },
-                      { name: "Feb", budget: 75 },
-                      { name: "Mar", budget: 100 },
-                      { name: "Apr", budget: 60 },
-                      { name: "May", budget: 30 },
+                      { name: "Jan", budget: 75 },
+                      { name: "Feb", budget: 100 },
+                      { name: "Mar", budget: 60 },
+                      { name: "Apr", budget: 30 },
                     ]}
                   >
                     <Bar
