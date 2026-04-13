@@ -21,10 +21,10 @@ const navigation = [
     matches: (pathname: string) => pathname === "/",
   },
   {
-    href: "/dashboard",
+    href: "/expenses",
     icon: Wallet,
     label: "Expenses",
-    matches: (pathname: string) => pathname === "/dashboard",
+    matches: (pathname: string) => pathname.startsWith("/expenses"),
   },
   {
     href: "/budgets",
@@ -33,10 +33,10 @@ const navigation = [
     matches: (pathname: string) => pathname.startsWith("/budgets"),
   },
   {
-    href: "/dashboard",
+    href: "/reports",
     icon: BarChart3,
     label: "Reports",
-    matches: (pathname: string) => pathname === "/dashboard",
+    matches: (pathname: string) => pathname.startsWith("/reports"),
   },
   {
     href: "/settings",
