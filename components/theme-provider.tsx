@@ -35,16 +35,20 @@ function applyTheme(theme: Theme) {
   root.style.colorScheme = theme;
 }
 
+function resolveInitialTheme(): Theme {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark"
+    ? "dark"
+    : "light";
+}
+
 function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>(resolveInitialTheme);
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-
-    if (storedTheme === "light" || storedTheme === "dark") {
-      setThemeState(storedTheme);
-    }
-
     applyTypographyScale(readStoredTypographyScale());
     applyIncognitoBalances(readStoredIncognitoBalances());
   }, []);

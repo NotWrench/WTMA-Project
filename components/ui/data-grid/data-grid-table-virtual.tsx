@@ -356,6 +356,7 @@ function DataGridTableVirtual<TData extends object>({
     [centerRows, customEstimateSize, estimateSize]
   );
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: centerRows.length,
     getScrollElement: resolveScrollElement,
@@ -366,9 +367,10 @@ function DataGridTableVirtual<TData extends object>({
     ...virtualizerOptionsRest,
   }) as DataGridTableVirtualizerInstance;
 
-  const virtualItems = isVirtualizationEnabled
-    ? virtualizer.getVirtualItems()
-    : [];
+  const virtualItems = useMemo(
+    () => (isVirtualizationEnabled ? virtualizer.getVirtualItems() : []),
+    [isVirtualizationEnabled, virtualizer]
+  );
   const totalSize = isVirtualizationEnabled ? virtualizer.getTotalSize() : 0;
   const measureRowRef =
     isVirtualizationEnabled && customMeasureElement

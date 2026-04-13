@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface TactileNoiseProps {
@@ -9,16 +8,6 @@ interface TactileNoiseProps {
 }
 
 export function TactileNoise({ className, opacity = 0.04 }: TactileNoiseProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <div
       className={cn(

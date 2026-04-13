@@ -238,6 +238,7 @@ export function DashboardTransactionsTable() {
     }
   }, [filteredRows.length, pagination.pageIndex, pagination.pageSize]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: filteredRows,
     columns,

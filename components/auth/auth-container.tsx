@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useState } from "react";
@@ -401,15 +402,15 @@ export function AuthContainer() {
       </div>
 
       <div className="mt-8 flex gap-6 font-light text-muted-foreground text-sm">
-        <a className="transition-colors hover:text-foreground" href="/">
+        <Link className="transition-colors hover:text-foreground" href="/">
           Privacy Policy
-        </a>
-        <a className="transition-colors hover:text-foreground" href="/">
+        </Link>
+        <Link className="transition-colors hover:text-foreground" href="/">
           Terms of Service
-        </a>
-        <a className="transition-colors hover:text-foreground" href="/">
+        </Link>
+        <Link className="transition-colors hover:text-foreground" href="/">
           Contact Support
-        </a>
+        </Link>
       </div>
     </div>
   );

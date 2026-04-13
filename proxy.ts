@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-export function proxy(_request: NextRequest) {
+export function proxy(request: NextRequest) {
+  // biome-ignore lint/complexity/noVoid: why not
+  void request;
   return NextResponse.next();
 }
 

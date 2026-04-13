@@ -57,9 +57,6 @@ function DataGridColumnHeaderInner<TData, TValue>({
   const resolvedTitle = title ?? getColumnHeaderLabel(column);
 
   const columnOrder = table.getState().columnOrder;
-  const _columnVisibilityKey = JSON.stringify(
-    table.getState().columnVisibility
-  );
   const isSorted = column.getIsSorted();
   const isPinned = column.getIsPinned();
   const canSort = column.getCanSort();
@@ -268,7 +265,6 @@ function DataGridColumnHeaderInner<TData, TValue>({
     }
 
     return items;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     filter,
     canSort,

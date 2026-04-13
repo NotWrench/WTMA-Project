@@ -27,10 +27,10 @@ const navigation = [
     matches: (pathname: string) => pathname === "/dashboard",
   },
   {
-    href: "/dashboard",
+    href: "/budgets",
     icon: WalletCards,
     label: "Budgets",
-    matches: (pathname: string) => pathname === "/dashboard",
+    matches: (pathname: string) => pathname.startsWith("/budgets"),
   },
   {
     href: "/dashboard",

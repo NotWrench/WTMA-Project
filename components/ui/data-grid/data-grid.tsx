@@ -130,16 +130,6 @@ function DataGridProvider<TData extends object>({
   table,
   ...props
 }: DataGridProps<TData> & { table: Table<TData> }) {
-  const _tableState = table.getState();
-  const resolvedColumnsResizeMode =
-    props.tableLayout?.columnsResizeMode ?? "onEnd";
-
-  // Keep resize mode aligned with the DataGrid contract every render so
-  // consumer-level useReactTable options cannot flip it back between drags.
-  if (props.tableLayout?.columnsResizable) {
-    table.options.columnResizeMode = resolvedColumnsResizeMode;
-  }
-
   const value: DataGridContextProps<TData> = {
     props,
     table,
