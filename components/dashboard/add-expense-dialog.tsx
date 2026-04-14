@@ -3,6 +3,7 @@
 import { Plus, ReceiptText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { ExpenseDatePicker } from "@/components/expenses/expense-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -159,11 +160,9 @@ export function AddExpenseDialog() {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="expense-date">Date</Label>
-                    <Input
+                    <ExpenseDatePicker
                       id="expense-date"
-                      onChange={(event) => setField("date", event.target.value)}
-                      required
-                      type="date"
+                      onChange={(nextDate) => setField("date", nextDate)}
                       value={form.date}
                     />
                   </div>
