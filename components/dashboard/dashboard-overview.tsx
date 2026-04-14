@@ -1,9 +1,9 @@
-import { Landmark, PiggyBank, Plus, ShoppingBag } from "lucide-react";
+import { Landmark, PiggyBank, ShoppingBag } from "lucide-react";
+import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { CategoryBreakdownRadialChart } from "@/components/dashboard/category-breakdown-radial-chart";
 import { SpendingTrendPanel } from "@/components/dashboard/spending-trend-panel";
 import { DashboardTransactionsTable } from "@/components/dashboard/transactions-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -44,10 +44,7 @@ export function DashboardOverview() {
           </p>
         </div>
 
-        <Button className="shadow-[0_12px_28px_rgba(79,100,91,0.15)]" size="lg">
-          <Plus className="size-4" />
-          Add Expense
-        </Button>
+        <AddExpenseDialog />
       </header>
 
       <section className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
