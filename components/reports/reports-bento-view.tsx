@@ -139,7 +139,7 @@ export function ReportsBentoView() {
               Net Savings
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-primary">
-              ₹42,850
+              <span data-sensitive-balance="true">₹42,850</span>
             </CardTitle>
             <Badge className="justify-start" variant="primary-light">
               <ArrowUp className="size-3.5" />
@@ -154,7 +154,7 @@ export function ReportsBentoView() {
               Total Income
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-foreground">
-              ₹1,25,000
+              <span data-sensitive-balance="true">₹1,25,000</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -165,7 +165,7 @@ export function ReportsBentoView() {
               Total Expenses
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-foreground">
-              ₹82,150
+              <span data-sensitive-balance="true">₹82,150</span>
             </CardTitle>
             <Badge className="justify-start" variant="warning-light">
               <ArrowDown className="size-3.5" />
@@ -210,7 +210,7 @@ export function ReportsBentoView() {
             Expense Categories
           </h2>
           <p className="mb-4 text-muted-foreground text-sm">
-            ₹82k total tracked
+            <span data-sensitive-balance="true">₹82k</span> total tracked
           </p>
 
           <div className="space-y-3">
@@ -220,7 +220,10 @@ export function ReportsBentoView() {
                   <span className="font-medium text-foreground text-sm">
                     {category.label}
                   </span>
-                  <span className="text-muted-foreground text-xs">
+                  <span
+                    className="text-muted-foreground text-xs"
+                    data-sensitive-balance="true"
+                  >
                     {category.percent}% • {category.amount}
                   </span>
                 </div>
@@ -273,7 +276,10 @@ export function ReportsBentoView() {
                   <p className="mt-1 text-muted-foreground text-xs">
                     {category.subtitle}
                   </p>
-                  <p className="mt-3 font-bold font-heading text-foreground text-xl">
+                  <p
+                    className="mt-3 font-bold font-heading text-foreground text-xl"
+                    data-sensitive-balance="true"
+                  >
                     {category.amount}
                   </p>
                   <Badge className="mt-2" variant={category.deltaVariant}>

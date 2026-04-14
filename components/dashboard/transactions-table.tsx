@@ -176,7 +176,10 @@ const columns: ColumnDef<TransactionRow>[] = [
       </div>
     ),
     cell: ({ row }) => (
-      <div className="text-right font-semibold text-foreground text-sm tabular-nums">
+      <div
+        className="text-right font-semibold text-foreground text-sm tabular-nums"
+        data-sensitive-balance="true"
+      >
         {currencyFormatter.format(row.original.amount)}
       </div>
     ),

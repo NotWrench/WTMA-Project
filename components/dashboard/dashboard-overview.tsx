@@ -62,7 +62,7 @@ export function DashboardOverview() {
               Total Spending
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-on-primary-container">
-              ₹ 84,250
+              <span data-sensitive-balance="true">₹ 84,250</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -76,7 +76,7 @@ export function DashboardOverview() {
               Remaining Budget
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-secondary">
-              ₹ 35,750
+              <span data-sensitive-balance="true">₹ 35,750</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -128,7 +128,10 @@ export function DashboardOverview() {
                       {item.label}
                     </span>
                   </div>
-                  <span className="font-semibold text-foreground text-sm">
+                  <span
+                    className="font-semibold text-foreground text-sm"
+                    data-sensitive-balance="true"
+                  >
                     {item.amount}
                   </span>
                 </div>

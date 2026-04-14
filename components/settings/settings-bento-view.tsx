@@ -27,20 +27,16 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { SETTINGS_PREFERENCE_KEYS } from "@/lib/settings-preferences";
 import {
-  applyIncognitoBalances,
-  applyTypographyScale,
-  readStoredIncognitoBalances,
-  readStoredTypographyScale,
-  SETTINGS_PREFERENCE_KEYS,
-} from "@/lib/settings-preferences";
+  type CurrencyCode,
+  useUserSettingsStore,
+} from "@/lib/user-settings-store";
 import { cn } from "@/lib/utils";
 
 type InterfaceMode = "light" | "dark";
-type CurrencyCode = "EUR" | "GBP" | "INR" | "USD";
 
 const DEFAULT_LANGUAGE = "en-US";
-const DEFAULT_CURRENCY: CurrencyCode = "INR";
 const TRANSACTION_EXPORT_ROWS = [
   {
     amount: 2450,
@@ -71,11 +67,30 @@ const settingsCardClassName =
 export function SettingsBentoView() {
   const { resolvedTheme, setTheme } = useTheme();
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("light");
-  const [typographyScale, setTypographyScale] = useState<number[]>([3]);
-  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
-  const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
+  const language = useUserSettingsStore((state) => state.language);
+  const currency = useUserSettingsStore((state) => state.currency);
+  const typographyScale = useUserSettingsStore(
+    (state) => state.typographyScale
+  );
+  const incognitoBalances = useUserSettingsStore(
+    (state) => state.incognitoBalances
+  );
+  const setLanguagePreference = useUserSettingsStore(
+    (state) => state.setLanguage
+  );
+  const setCurrencyPreference = useUserSettingsStore(
+    (state) => state.setCurrency
+  );
+  const setTypographyScalePreference = useUserSettingsStore(
+    (state) => state.setTypographyScale
+  );
+  const setIncognitoBalancesPreference = useUserSettingsStore(
+    (state) => state.setIncognitoBalances
+  );
+  const resetUserSettings = useUserSettingsStore(
+    (state) => state.resetUserSettings
+  );
   const [biometricLock, setBiometricLock] = useState(true);
-  const [incognitoBalances, setIncognitoBalances] = useState(false);
   const [isPurgeArmed, setIsPurgeArmed] = useState(false);
 
   useEffect(() => {
@@ -83,30 +98,8 @@ export function SettingsBentoView() {
   }, [resolvedTheme]);
 
   useEffect(() => {
-    const storedLanguage = window.localStorage.getItem(
-      SETTINGS_PREFERENCE_KEYS.language
-    );
-    const storedCurrency = window.localStorage.getItem(
-      SETTINGS_PREFERENCE_KEYS.currency
-    );
-    const storedScale = readStoredTypographyScale();
-    const storedIncognito = readStoredIncognitoBalances();
-
-    setLanguage(storedLanguage || DEFAULT_LANGUAGE);
-    setCurrency(
-      storedCurrency === "USD" ||
-        storedCurrency === "EUR" ||
-        storedCurrency === "GBP"
-        ? storedCurrency
-        : DEFAULT_CURRENCY
-    );
-    setTypographyScale([storedScale]);
-    setIncognitoBalances(storedIncognito);
-
-    applyTypographyScale(storedScale);
-    applyIncognitoBalances(storedIncognito);
-    document.documentElement.lang = storedLanguage || DEFAULT_LANGUAGE;
-  }, []);
+    document.documentElement.lang = language || DEFAULT_LANGUAGE;
+  }, [language]);
 
   const formattedBalancePreview = useMemo(() => {
     return new Intl.NumberFormat(language, {
@@ -121,12 +114,7 @@ export function SettingsBentoView() {
       return;
     }
 
-    setLanguage(nextLanguage);
-    window.localStorage.setItem(
-      SETTINGS_PREFERENCE_KEYS.language,
-      nextLanguage
-    );
-    document.documentElement.lang = nextLanguage;
+    setLanguagePreference(nextLanguage);
   };
 
   const saveCurrency = (nextCurrency: string | null) => {
@@ -139,31 +127,17 @@ export function SettingsBentoView() {
         ? nextCurrency
         : "INR";
 
-    setCurrency(normalizedCurrency);
-    window.localStorage.setItem(
-      SETTINGS_PREFERENCE_KEYS.currency,
-      normalizedCurrency
-    );
+    setCurrencyPreference(normalizedCurrency);
   };
 
   const saveTypographyScale = (value: number | readonly number[]) => {
     const normalizedValue = Array.isArray(value) ? value[0] : value;
 
-    setTypographyScale([normalizedValue]);
-    window.localStorage.setItem(
-      SETTINGS_PREFERENCE_KEYS.typographyScale,
-      `${normalizedValue}`
-    );
-    applyTypographyScale(normalizedValue);
+    setTypographyScalePreference(normalizedValue);
   };
 
   const saveIncognitoBalances = (enabled: boolean) => {
-    setIncognitoBalances(enabled);
-    window.localStorage.setItem(
-      SETTINGS_PREFERENCE_KEYS.incognitoBalances,
-      `${enabled}`
-    );
-    applyIncognitoBalances(enabled);
+    setIncognitoBalancesPreference(enabled);
   };
 
   const downloadFile = (filename: string, content: string, type: string) => {
@@ -264,21 +238,17 @@ export function SettingsBentoView() {
   };
 
   const purgeArchiveData = () => {
+    window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.userSettings);
     window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.currency);
     window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.incognitoBalances);
     window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.language);
     window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.theme);
     window.localStorage.removeItem(SETTINGS_PREFERENCE_KEYS.typographyScale);
 
+    resetUserSettings();
     setTheme("light");
     setInterfaceMode("light");
-    setLanguage(DEFAULT_LANGUAGE);
-    setCurrency(DEFAULT_CURRENCY);
-    setTypographyScale([3]);
-    setIncognitoBalances(false);
     document.documentElement.lang = DEFAULT_LANGUAGE;
-    applyTypographyScale(3);
-    applyIncognitoBalances(false);
   };
 
   const handlePurgeData = () => {
@@ -371,7 +341,7 @@ export function SettingsBentoView() {
                   min={1}
                   onValueChange={saveTypographyScale}
                   step={1}
-                  value={typographyScale}
+                  value={[typographyScale]}
                 />
                 <span className="font-semibold text-foreground text-lg">A</span>
               </div>
@@ -432,15 +402,6 @@ export function SettingsBentoView() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="rounded-xl bg-surface-container-high p-3">
-              <p className="font-medium text-[0.7rem] text-muted-foreground uppercase tracking-widest">
-                Preview
-              </p>
-              <p className="mt-1 font-semibold text-foreground text-sm">
-                Monthly total: {formattedBalancePreview}
-              </p>
-            </div>
           </div>
         </motion.div>
 
@@ -496,10 +457,8 @@ export function SettingsBentoView() {
                 Balance Preview
               </p>
               <p
-                className={cn(
-                  "mt-1 font-semibold text-foreground text-sm transition-all",
-                  incognitoBalances && "select-none blur-[5px]"
-                )}
+                className="mt-1 font-semibold text-foreground text-sm transition-all"
+                data-sensitive-balance="true"
               >
                 {formattedBalancePreview}
               </p>

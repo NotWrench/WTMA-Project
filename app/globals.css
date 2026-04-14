@@ -205,4 +205,9 @@
   svg[data-lucide] {
     stroke-width: 1.85;
   }
+
+  html[data-incognito-balances="true"] [data-sensitive-balance="true"] {
+    user-select: none;
+    filter: blur(6px);
+  }
 }

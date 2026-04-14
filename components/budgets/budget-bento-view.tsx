@@ -109,7 +109,9 @@ export function BudgetBentoView() {
               Planned Budget
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-primary">
-              {currencyFormatter.format(totalAllocated)}
+              <span data-sensitive-balance="true">
+                {currencyFormatter.format(totalAllocated)}
+              </span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -123,7 +125,9 @@ export function BudgetBentoView() {
               Actual Spend
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              {currencyFormatter.format(totalSpent)}
+              <span data-sensitive-balance="true">
+                {currencyFormatter.format(totalSpent)}
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -149,7 +153,9 @@ export function BudgetBentoView() {
               Remaining Envelope
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              {currencyFormatter.format(totalRemaining)}
+              <span data-sensitive-balance="true">
+                {currencyFormatter.format(totalRemaining)}
+              </span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -202,10 +208,16 @@ export function BudgetBentoView() {
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-muted-foreground text-xs">
+                    <span
+                      className="font-medium text-muted-foreground text-xs"
+                      data-sensitive-balance="true"
+                    >
                       {currencyFormatter.format(category.spent)} spent
                     </span>
-                    <span className="font-semibold text-foreground text-xs">
+                    <span
+                      className="font-semibold text-foreground text-xs"
+                      data-sensitive-balance="true"
+                    >
                       {currencyFormatter.format(category.allocated)} budget
                     </span>
                   </div>
@@ -218,7 +230,10 @@ export function BudgetBentoView() {
                     <span className="text-muted-foreground text-xs">
                       {isOverLimit ? "Over by" : "Remaining"}
                     </span>
-                    <span className="font-semibold text-foreground text-xs">
+                    <span
+                      className="font-semibold text-foreground text-xs"
+                      data-sensitive-balance="true"
+                    >
                       {currencyFormatter.format(Math.abs(remaining))}
                     </span>
                   </div>
@@ -314,10 +329,16 @@ export function BudgetBentoView() {
                     <span className="font-semibold text-foreground">
                       {category.label}
                     </span>
-                    <span className="text-muted-foreground">
+                    <span
+                      className="text-muted-foreground"
+                      data-sensitive-balance="true"
+                    >
                       {currencyFormatter.format(category.allocated)}
                     </span>
-                    <span className="text-muted-foreground">
+                    <span
+                      className="text-muted-foreground"
+                      data-sensitive-balance="true"
+                    >
                       {currencyFormatter.format(category.spent)}
                     </span>
                     <Badge

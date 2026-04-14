@@ -4,6 +4,7 @@ export const SETTINGS_PREFERENCE_KEYS = {
   language: "trackami-language",
   theme: "trackami-theme",
   typographyScale: "trackami-typography-scale",
+  userSettings: "trackami-user-settings",
 } as const;
 
 const TYPOGRAPHY_SCALE_PERCENT_MAP = {

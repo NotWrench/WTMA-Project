@@ -13,9 +13,8 @@ import {
 import {
   applyIncognitoBalances,
   applyTypographyScale,
-  readStoredIncognitoBalances,
-  readStoredTypographyScale,
 } from "@/lib/settings-preferences";
+import { useUserSettingsStore } from "@/lib/user-settings-store";
 
 type Theme = "light" | "dark";
 
@@ -47,11 +46,20 @@ function resolveInitialTheme(): Theme {
 
 function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(resolveInitialTheme);
+  const typographyScale = useUserSettingsStore(
+    (state) => state.typographyScale
+  );
+  const incognitoBalances = useUserSettingsStore(
+    (state) => state.incognitoBalances
+  );
 
   useEffect(() => {
-    applyTypographyScale(readStoredTypographyScale());
-    applyIncognitoBalances(readStoredIncognitoBalances());
-  }, []);
+    applyTypographyScale(typographyScale);
+  }, [typographyScale]);
+
+  useEffect(() => {
+    applyIncognitoBalances(incognitoBalances);
+  }, [incognitoBalances]);
 
   useEffect(() => {
     applyTheme(theme);

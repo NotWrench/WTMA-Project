@@ -135,7 +135,7 @@ export function ExpensesBentoView() {
               Total Spent This Month
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-primary">
-              ₹42,850.00
+              <span data-sensitive-balance="true">₹42,850.00</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -163,7 +163,7 @@ export function ExpensesBentoView() {
               Monthly Savings
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              ₹12,400
+              <span data-sensitive-balance="true">₹12,400</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -177,7 +177,7 @@ export function ExpensesBentoView() {
               Upcoming Bill
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              ₹18,500
+              <span data-sensitive-balance="true">₹18,500</span>
             </CardTitle>
             <p className="text-muted-foreground text-xs">Due in 4 days</p>
           </CardHeader>
@@ -290,7 +290,10 @@ export function ExpensesBentoView() {
                     <Badge className="justify-self-start" variant="outline">
                       {expense.category}
                     </Badge>
-                    <span className="font-semibold text-foreground text-sm">
+                    <span
+                      className="font-semibold text-foreground text-sm"
+                      data-sensitive-balance="true"
+                    >
                       {currencyFormatter.format(expense.amount)}
                     </span>
                     <Badge
@@ -337,7 +340,8 @@ export function ExpensesBentoView() {
             <CardContent>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Your spending in Dining has decreased by 15% this week. Keep
-                maintaining this trend to hit your savings goal of ₹15,000.
+                maintaining this trend to hit your savings goal of{" "}
+                <span data-sensitive-balance="true">₹15,000</span>.
               </p>
               <Button className="mt-4 w-full" type="button" variant="outline">
                 View Detailed Report
@@ -359,7 +363,8 @@ export function ExpensesBentoView() {
                     Workspace Rent
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    Due in 4 days • ₹18,500
+                    Due in 4 days •{" "}
+                    <span data-sensitive-balance="true">₹18,500</span>
                   </p>
                 </div>
               </div>
@@ -370,7 +375,8 @@ export function ExpensesBentoView() {
                     Savings Goal
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    ₹12,400 saved this month. Keep this trajectory.
+                    <span data-sensitive-balance="true">₹12,400</span> saved
+                    this month. Keep this trajectory.
                   </p>
                 </div>
               </div>
