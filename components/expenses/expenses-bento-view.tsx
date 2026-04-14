@@ -1,5 +1,6 @@
 "use client";
 
+import { format, isSameMonth, parse } from "date-fns";
 import {
   CalendarDays,
   CircleAlert,
@@ -10,7 +11,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { ExpenseMonthPicker } from "@/components/expenses/expense-month-picker";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/ui/bento-grid";
 import { Button } from "@/components/ui/button";
@@ -87,11 +89,29 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
   minimumFractionDigits: 2,
 });
 
+const parseExpenseDate = (value: string): Date | undefined => {
+  const [datePart] = value.split(" • ");
+  const parsed = parse(datePart, "MMM dd, yyyy", new Date());
+
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
 export function ExpensesBentoView() {
   const [selectedCategory, setSelectedCategory] =
     useState<string>("All Categories");
+  const [selectedMonth, setSelectedMonth] = useState<Date>(() => new Date());
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>("Payment Method");
+
+  const monthFilteredExpenses = useMemo(
+    () =>
+      expenses.filter((expense) => {
+        const expenseDate = parseExpenseDate(expense.date);
+
+        return expenseDate ? isSameMonth(expenseDate, selectedMonth) : false;
+      }),
+    [selectedMonth]
+  );
 
   return (
     <section className="space-y-8">
@@ -191,15 +211,10 @@ export function ExpensesBentoView() {
           </div>
 
           <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Button
-              className="justify-start"
-              size="sm"
-              type="button"
-              variant="outline"
-            >
-              <CalendarDays className="size-4" />
-              Apr 2026
-            </Button>
+            <ExpenseMonthPicker
+              onChange={setSelectedMonth}
+              value={selectedMonth}
+            />
             <Select
               onValueChange={(value) => {
                 if (value) {
@@ -239,7 +254,8 @@ export function ExpensesBentoView() {
           </div>
 
           <p className="mb-3 text-muted-foreground text-sm">
-            Showing 42 transactions
+            Showing {monthFilteredExpenses.length} transactions in{" "}
+            {format(selectedMonth, "MMMM yyyy")}
           </p>
 
           <div className="overflow-hidden rounded-2xl border border-border/25">
@@ -250,40 +266,46 @@ export function ExpensesBentoView() {
               <span>Status</span>
             </div>
             <div className="divide-y divide-border/20">
-              {expenses.map((expense) => (
-                <div
-                  className="grid grid-cols-[1.4fr_0.9fr_0.7fr_0.7fr] items-center gap-2 px-4 py-3"
-                  key={`${expense.date}-${expense.merchant}`}
-                >
-                  <div>
-                    <p className="font-semibold text-foreground text-sm">
-                      {expense.merchant}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {expense.note}
-                    </p>
-                    <p className="mt-1 text-muted-foreground text-xs">
-                      {expense.date}
-                    </p>
-                  </div>
-                  <Badge className="justify-self-start" variant="outline">
-                    {expense.category}
-                  </Badge>
-                  <span className="font-semibold text-foreground text-sm">
-                    {currencyFormatter.format(expense.amount)}
-                  </span>
-                  <Badge
-                    className="justify-self-start"
-                    variant={
-                      expense.status === "Completed"
-                        ? "success-light"
-                        : "warning-light"
-                    }
-                  >
-                    {expense.status}
-                  </Badge>
+              {monthFilteredExpenses.length === 0 ? (
+                <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+                  No transactions found in {format(selectedMonth, "MMMM yyyy")}.
                 </div>
-              ))}
+              ) : (
+                monthFilteredExpenses.map((expense) => (
+                  <div
+                    className="grid grid-cols-[1.4fr_0.9fr_0.7fr_0.7fr] items-center gap-2 px-4 py-3"
+                    key={`${expense.date}-${expense.merchant}`}
+                  >
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">
+                        {expense.merchant}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {expense.note}
+                      </p>
+                      <p className="mt-1 text-muted-foreground text-xs">
+                        {expense.date}
+                      </p>
+                    </div>
+                    <Badge className="justify-self-start" variant="outline">
+                      {expense.category}
+                    </Badge>
+                    <span className="font-semibold text-foreground text-sm">
+                      {currencyFormatter.format(expense.amount)}
+                    </span>
+                    <Badge
+                      className="justify-self-start"
+                      variant={
+                        expense.status === "Completed"
+                          ? "success-light"
+                          : "warning-light"
+                      }
+                    >
+                      {expense.status}
+                    </Badge>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
