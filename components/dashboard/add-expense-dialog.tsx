@@ -3,7 +3,7 @@
 import { Plus, ReceiptText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ExpenseDatePicker } from "@/components/expenses/expense-date-picker";
+import { ExpenseDatePicker } from "@/components/dashboard/expense-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
