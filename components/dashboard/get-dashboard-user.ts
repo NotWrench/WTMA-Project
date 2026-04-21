@@ -16,9 +16,12 @@ const DEFAULT_DASHBOARD_USER_PLAN = "Premium Plan";
 export const getDashboardUser = (
   session: DashboardSession | null | undefined
 ): DashboardUser => {
+  const sessionName = session?.user?.name?.trim() ?? "";
   const fallbackNameFromEmail = session?.user?.email?.split("@")[0];
+  const isPlaceholderName =
+    sessionName.toLowerCase() === DEFAULT_DASHBOARD_USER_NAME.toLowerCase();
   const name =
-    session?.user?.name?.trim() ||
+    (isPlaceholderName ? "" : sessionName) ||
     fallbackNameFromEmail ||
     DEFAULT_DASHBOARD_USER_NAME;
 
