@@ -1,10 +1,14 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
-import { databaseConnectionUrl } from "../../utils/env";
+import { getDrizzleDatabaseUrl } from "../../utils/drizzle-env";
 import {
   account,
   accountRelations,
+  budgetCategory,
+  budgetCategoryRelations,
+  expense,
+  expenseRelations,
   session,
   sessionRelations,
   user,
@@ -17,11 +21,15 @@ const schema = {
   session,
   account,
   verification,
+  expense,
+  budgetCategory,
   userRelations,
   sessionRelations,
   accountRelations,
+  expenseRelations,
+  budgetCategoryRelations,
 };
 
-const client = neon(databaseConnectionUrl);
+const client = neon(getDrizzleDatabaseUrl());
 
 export const db = drizzle({ client, schema });

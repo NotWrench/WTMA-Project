@@ -1,5 +1,14 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -73,9 +82,64 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
 
+/** Expense line items (dashboard transactions, expenses list, add-expense form). Amounts in minor units (paise). */
+export const expense = pgTable(
+  "expense",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    amountPaise: integer("amount_paise").notNull(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    merchant: text("merchant").notNull(),
+    notes: text("notes").notNull().default(""),
+    category: text("category").notNull(),
+    status: text("status").notNull(),
+    paymentMethod: text("payment_method"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("expense_user_id_occurred_at_idx").on(table.userId, table.occurredAt),
+  ]
+);
+
+/** Monthly per-category budget caps (budget planner). Amounts in minor units (paise). */
+export const budgetCategory = pgTable(
+  "budget_category",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    month: date("month").notNull(),
+    label: text("label").notNull(),
+    allocatedPaise: integer("allocated_paise").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("budget_category_user_month_label_uidx").on(
+      table.userId,
+      table.month,
+      table.label
+    ),
+    index("budget_category_user_id_month_idx").on(table.userId, table.month),
+  ]
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  expenses: many(expense),
+  budgetCategories: many(budgetCategory),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -88,6 +152,20 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+
+export const expenseRelations = relations(expense, ({ one }) => ({
+  user: one(user, {
+    fields: [expense.userId],
+    references: [user.id],
+  }),
+}));
+
+export const budgetCategoryRelations = relations(budgetCategory, ({ one }) => ({
+  user: one(user, {
+    fields: [budgetCategory.userId],
     references: [user.id],
   }),
 }));

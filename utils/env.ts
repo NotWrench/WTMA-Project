@@ -27,7 +27,4 @@ if (!parsedEnv.success) {
 
 export const env = parsedEnv.data;
 
-export const databaseConnectionUrl =
-  env.NODE_ENV === "production" ? env.DATABASE_POOLER_URL : env.DATABASE_URL;
-
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
