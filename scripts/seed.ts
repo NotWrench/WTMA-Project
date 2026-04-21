@@ -1,11 +1,33 @@
 import "./load-env";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 
 import { db } from "../lib/db/index";
 import { budgetCategory, expense } from "../lib/db/schema";
 
-const SEED_USER_ID = "KfRXLtsjtzp1uSmCe8e3r8XLEiECQBCX";
+const SEED_USER_ID = "EXdX3Dql76wDuTqwaU91YHIBrmNec1B6";
+
+/** Stable PKs — delete by id so re-seed works if `user_id` changed between runs. */
+const SEED_BUDGET_IDS = [
+  "bcat_seed_housing",
+  "bcat_seed_food",
+  "bcat_seed_mobility",
+  "bcat_seed_subs",
+] as const;
+
+const SEED_EXPENSE_IDS = [
+  "exp_seed_expenses_1",
+  "exp_seed_expenses_2",
+  "exp_seed_expenses_3",
+  "exp_seed_expenses_4",
+  "exp_seed_expenses_5",
+  "exp_seed_dash_1",
+  "exp_seed_dash_2",
+  "exp_seed_dash_3",
+  "exp_seed_dash_4",
+  "exp_seed_dash_5",
+  "exp_seed_dash_6",
+] as const;
 
 /** INR whole rupees → paise (minor units). */
 function inrPaise(rupees: number): number {
@@ -13,10 +35,22 @@ function inrPaise(rupees: number): number {
 }
 
 async function main() {
-  await db.delete(expense).where(eq(expense.userId, SEED_USER_ID));
+  await db
+    .delete(expense)
+    .where(
+      or(
+        eq(expense.userId, SEED_USER_ID),
+        inArray(expense.id, [...SEED_EXPENSE_IDS])
+      )
+    );
   await db
     .delete(budgetCategory)
-    .where(eq(budgetCategory.userId, SEED_USER_ID));
+    .where(
+      or(
+        eq(budgetCategory.userId, SEED_USER_ID),
+        inArray(budgetCategory.id, [...SEED_BUDGET_IDS])
+      )
+    );
 
   const april2026 = "2026-04-01";
 
