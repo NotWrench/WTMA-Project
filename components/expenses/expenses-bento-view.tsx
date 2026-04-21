@@ -1,6 +1,6 @@
 "use client";
 
-import { format, isSameMonth, parse } from "date-fns";
+import { format, isSameMonth, parseISO } from "date-fns";
 import {
   CalendarDays,
   CircleAlert,
@@ -30,58 +30,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { ExpenseRowDTO, ExpensesPageData } from "@/lib/data/finance-types";
+import { expenseStatusLabel } from "@/lib/expense-display";
+import { formatInrPaise, formatInrPaiseWhole } from "@/lib/format-inr";
 
 interface ExpenseRow {
   amount: number;
-  category: "Dining" | "Health" | "Transport" | "Utilities" | "Work";
+  category: string;
   date: string;
+  id: string;
   merchant: string;
   note: string;
-  status: "Completed" | "Pending";
+  occurredAt: Date;
+  paymentMethod: string | null;
+  status: "Completed" | "Pending" | "Scheduled";
 }
 
-const expenses: ExpenseRow[] = [
-  {
-    date: "Apr 13, 2026 • 10:42 AM",
-    merchant: "Starbucks",
-    note: "Morning brew - Indiranagar",
-    category: "Dining",
-    amount: 450,
-    status: "Completed",
-  },
-  {
-    date: "Apr 12, 2026 • 02:15 PM",
-    merchant: "Amazon India",
-    note: "Office stationery & supplies",
-    category: "Work",
-    amount: 2840,
-    status: "Pending",
-  },
-  {
-    date: "Apr 11, 2026 • 08:00 PM",
-    merchant: "Shell",
-    note: "Sedan refuel",
-    category: "Transport",
-    amount: 4200,
-    status: "Completed",
-  },
-  {
-    date: "Apr 10, 2026 • 11:30 AM",
-    merchant: "Airtel Broadband",
-    note: "Monthly internet subscription",
-    category: "Utilities",
-    amount: 1179,
-    status: "Completed",
-  },
-  {
-    date: "Apr 09, 2026 • 06:45 PM",
-    merchant: "Apollo Pharmacy",
-    note: "Prescription medicines",
-    category: "Health",
-    amount: 850,
-    status: "Completed",
-  },
-];
+function mapExpense(e: ExpenseRowDTO): ExpenseRow {
+  const d = parseISO(e.occurredAtIso);
+  return {
+    id: e.id,
+    amount: e.amountPaise / 100,
+    category: e.category,
+    occurredAt: d,
+    date: format(d, "MMM dd, yyyy • hh:mm a"),
+    merchant: e.merchant,
+    note: e.notes,
+    paymentMethod: e.paymentMethod,
+    status: expenseStatusLabel(e.status),
+  };
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -89,29 +67,59 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
   minimumFractionDigits: 2,
 });
 
-const parseExpenseDate = (value: string): Date | undefined => {
-  const [datePart] = value.split(" • ");
-  const parsed = parse(datePart, "MMM dd, yyyy", new Date());
+function expenseStatusBadgeVariant(
+  status: ExpenseRow["status"]
+): "success-light" | "warning-light" | "outline" {
+  if (status === "Completed") {
+    return "success-light";
+  }
+  if (status === "Pending") {
+    return "warning-light";
+  }
+  return "outline";
+}
 
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
-};
+interface ExpensesBentoViewProps {
+  data: ExpensesPageData;
+}
 
-export function ExpensesBentoView() {
+export function ExpensesBentoView({ data }: ExpensesBentoViewProps) {
+  const rows = useMemo(() => data.expenses.map(mapExpense), [data.expenses]);
+
   const [selectedCategory, setSelectedCategory] =
     useState<string>("All Categories");
   const [selectedMonth, setSelectedMonth] = useState<Date>(() => new Date());
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>("Payment Method");
 
-  const monthFilteredExpenses = useMemo(
-    () =>
-      expenses.filter((expense) => {
-        const expenseDate = parseExpenseDate(expense.date);
+  const monthFilteredExpenses = useMemo(() => {
+    return rows.filter((expense) => {
+      if (!isSameMonth(expense.occurredAt, selectedMonth)) {
+        return false;
+      }
+      if (
+        selectedCategory !== "All Categories" &&
+        expense.category !== selectedCategory
+      ) {
+        return false;
+      }
+      if (
+        selectedPaymentMethod !== "Payment Method" &&
+        expense.paymentMethod !== selectedPaymentMethod
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [rows, selectedCategory, selectedMonth, selectedPaymentMethod]);
 
-        return expenseDate ? isSameMonth(expenseDate, selectedMonth) : false;
-      }),
-    [selectedMonth]
-  );
+  let insightText =
+    "Add expenses to unlock personalized insights for this month.";
+  if (data.insightTopCategory && data.monthlySavingsPaise > 0) {
+    insightText = `Your top spend category is ${data.insightTopCategory}. You have ${formatInrPaiseWhole(data.monthlySavingsPaise)} in planned savings headroom this month.`;
+  } else if (data.insightTopCategory) {
+    insightText = `Your top spend category is ${data.insightTopCategory}. Review envelopes to stay on track.`;
+  }
 
   return (
     <section className="space-y-8">
@@ -135,7 +143,9 @@ export function ExpensesBentoView() {
               Total Spent This Month
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-primary">
-              <span data-sensitive-balance="true">₹42,850.00</span>
+              <span data-sensitive-balance="true">
+                {formatInrPaise(data.totalSpentMonthPaise)}
+              </span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -149,7 +159,7 @@ export function ExpensesBentoView() {
               Pending Approvals
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              14
+              {data.pendingCount}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -163,7 +173,9 @@ export function ExpensesBentoView() {
               Monthly Savings
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              <span data-sensitive-balance="true">₹12,400</span>
+              <span data-sensitive-balance="true">
+                {formatInrPaiseWhole(data.monthlySavingsPaise)}
+              </span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -177,9 +189,17 @@ export function ExpensesBentoView() {
               Upcoming Bill
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-3xl text-foreground">
-              <span data-sensitive-balance="true">₹18,500</span>
+              {data.upcomingBill ? (
+                <span data-sensitive-balance="true">
+                  {formatInrPaise(data.upcomingBill.amountPaise)}
+                </span>
+              ) : (
+                <span className="text-lg text-muted-foreground">—</span>
+              )}
             </CardTitle>
-            <p className="text-muted-foreground text-xs">Due in 4 days</p>
+            <p className="text-muted-foreground text-xs">
+              {data.upcomingBill?.dueLabel ?? "No scheduled bills"}
+            </p>
           </CardHeader>
         </Card>
       </section>
@@ -231,6 +251,11 @@ export function ExpensesBentoView() {
                 <SelectItem value="Dining">Dining</SelectItem>
                 <SelectItem value="Utilities">Utilities</SelectItem>
                 <SelectItem value="Work">Work</SelectItem>
+                <SelectItem value="Health">Health</SelectItem>
+                <SelectItem value="Transport">Transport</SelectItem>
+                <SelectItem value="Electronics">Electronics</SelectItem>
+                <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+                <SelectItem value="Essential">Essential</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -249,6 +274,8 @@ export function ExpensesBentoView() {
                 <SelectItem value="Card">Card</SelectItem>
                 <SelectItem value="UPI">UPI</SelectItem>
                 <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                <SelectItem value="Cash">Cash</SelectItem>
+                <SelectItem value="Net Banking">Net Banking</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -274,7 +301,7 @@ export function ExpensesBentoView() {
                 monthFilteredExpenses.map((expense) => (
                   <div
                     className="grid grid-cols-[1.4fr_0.9fr_0.7fr_0.7fr] items-center gap-2 px-4 py-3"
-                    key={`${expense.date}-${expense.merchant}`}
+                    key={expense.id}
                   >
                     <div>
                       <p className="font-semibold text-foreground text-sm">
@@ -298,11 +325,7 @@ export function ExpensesBentoView() {
                     </span>
                     <Badge
                       className="justify-self-start"
-                      variant={
-                        expense.status === "Completed"
-                          ? "success-light"
-                          : "warning-light"
-                      }
+                      variant={expenseStatusBadgeVariant(expense.status)}
                     >
                       {expense.status}
                     </Badge>
@@ -313,15 +336,10 @@ export function ExpensesBentoView() {
           </div>
 
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-muted-foreground text-xs">Page 1 of 5</p>
-            <div className="flex gap-2">
-              <Button size="sm" type="button" variant="outline">
-                Previous
-              </Button>
-              <Button size="sm" type="button" variant="outline">
-                Next
-              </Button>
-            </div>
+            <p className="text-muted-foreground text-xs">
+              {monthFilteredExpenses.length} transaction
+              {monthFilteredExpenses.length === 1 ? "" : "s"} shown
+            </p>
           </div>
         </motion.div>
 
@@ -339,9 +357,7 @@ export function ExpensesBentoView() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Your spending in Dining has decreased by 15% this week. Keep
-                maintaining this trend to hit your savings goal of{" "}
-                <span data-sensitive-balance="true">₹15,000</span>.
+                {insightText}
               </p>
               <Button className="mt-4 w-full" type="button" variant="outline">
                 View Detailed Report
@@ -356,18 +372,26 @@ export function ExpensesBentoView() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-start gap-2 rounded-xl bg-surface-container-low p-3">
-                <CircleAlert className="mt-0.5 size-4 text-destructive" />
-                <div>
-                  <p className="font-semibold text-foreground text-sm">
-                    Workspace Rent
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    Due in 4 days •{" "}
-                    <span data-sensitive-balance="true">₹18,500</span>
-                  </p>
+              {data.upcomingBill ? (
+                <div className="flex items-start gap-2 rounded-xl bg-surface-container-low p-3">
+                  <CircleAlert className="mt-0.5 size-4 text-destructive" />
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">
+                      {data.upcomingBill.merchant}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      {data.upcomingBill.dueLabel} •{" "}
+                      <span data-sensitive-balance="true">
+                        {formatInrPaise(data.upcomingBill.amountPaise)}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No scheduled payments on file.
+                </p>
+              )}
               <div className="mt-3 flex items-start gap-2 rounded-xl bg-surface-container-low p-3">
                 <CircleCheck className="mt-0.5 size-4 text-primary" />
                 <div>
@@ -375,8 +399,10 @@ export function ExpensesBentoView() {
                     Savings Goal
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    <span data-sensitive-balance="true">₹12,400</span> saved
-                    this month. Keep this trajectory.
+                    <span data-sensitive-balance="true">
+                      {formatInrPaiseWhole(data.monthlySavingsPaise)}
+                    </span>{" "}
+                    headroom vs planned budget this month.
                   </p>
                 </div>
               </div>

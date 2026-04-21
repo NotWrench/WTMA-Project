@@ -9,6 +9,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import type { LucideIcon } from "lucide-react";
 import { Filter, Home, Search, ShoppingCart, Utensils } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
@@ -21,66 +22,28 @@ import {
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { Input } from "@/components/ui/input";
+import type { TransactionRowDTO } from "@/lib/data/finance-types";
+import { expenseStatusLabel } from "@/lib/expense-display";
 
 interface TransactionRow {
   amount: number;
-  category: "Electronics" | "Essential" | "Lifestyle";
+  category: string;
   date: string;
   description: string;
   merchant: string;
-  status: "Completed" | "Scheduled";
+  status: "Completed" | "Pending" | "Scheduled";
 }
 
-const transactionRows: TransactionRow[] = [
-  {
-    merchant: "Amazon India",
-    description: "Electronic Accessories",
-    category: "Electronics",
-    date: "Apr 13, 2026",
-    amount: 2450,
-    status: "Completed",
-  },
-  {
-    merchant: "Blue Tokai Coffee",
-    description: "Cafe & Beverages",
-    category: "Lifestyle",
-    date: "Apr 12, 2026",
-    amount: 850,
-    status: "Completed",
-  },
-  {
-    merchant: "Property Rent",
-    description: "Housing Monthly",
-    category: "Essential",
-    date: "Apr 10, 2026",
-    amount: 35_000,
-    status: "Scheduled",
-  },
-  {
-    merchant: "Urban Ladder",
-    description: "Home Upgrade",
-    category: "Lifestyle",
-    date: "Apr 08, 2026",
-    amount: 4200,
-    status: "Completed",
-  },
-  {
-    merchant: "Reliance Fresh",
-    description: "Groceries",
-    category: "Essential",
-    date: "Apr 06, 2026",
-    amount: 3260,
-    status: "Completed",
-  },
-  {
-    merchant: "Croma",
-    description: "Smart Home Device",
-    category: "Electronics",
-    date: "Apr 04, 2026",
-    amount: 11_990,
-    status: "Completed",
-  },
-];
+function mapDto(r: TransactionRowDTO): TransactionRow {
+  return {
+    merchant: r.merchant,
+    description: r.description,
+    category: r.category,
+    date: r.dateDisplay,
+    amount: r.amountPaise / 100,
+    status: expenseStatusLabel(r.status),
+  };
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -88,26 +51,30 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
   minimumFractionDigits: 2,
 });
 
-const iconByCategory = {
+const iconByCategory: Record<string, LucideIcon> = {
   Electronics: ShoppingCart,
   Lifestyle: Utensils,
   Essential: Home,
-} as const;
+};
 
-const iconWrapperByCategory = {
+const iconWrapperByCategory: Record<string, string> = {
   Electronics: "bg-secondary-container/70 text-secondary",
   Lifestyle: "bg-tertiary-container/60 text-tertiary",
   Essential: "bg-primary-container/80 text-primary",
-} as const;
+};
 
-const categoryBadgeByCategory = {
+const categoryBadgeByCategory: Record<
+  string,
+  "secondary" | "destructive-light" | "primary-light" | "outline"
+> = {
   Electronics: "secondary",
   Lifestyle: "destructive-light",
   Essential: "primary-light",
-} as const;
+};
 
 const statusStyleByValue = {
   Completed: "text-primary",
+  Pending: "text-amber-700 dark:text-amber-400",
   Scheduled: "text-muted-foreground",
 } as const;
 
@@ -120,12 +87,15 @@ const columns: ColumnDef<TransactionRow>[] = [
       </span>
     ),
     cell: ({ row }) => {
-      const Icon = iconByCategory[row.original.category];
+      const Icon = iconByCategory[row.original.category] ?? ShoppingCart;
+      const wrap =
+        iconWrapperByCategory[row.original.category] ??
+        "bg-surface-container-high text-foreground";
 
       return (
         <div className="flex items-center gap-3">
           <div
-            className={`flex size-10 items-center justify-center rounded-lg ${iconWrapperByCategory[row.original.category]}`}
+            className={`flex size-10 items-center justify-center rounded-lg ${wrap}`}
           >
             <Icon className="size-4" />
           </div>
@@ -151,7 +121,7 @@ const columns: ColumnDef<TransactionRow>[] = [
     cell: ({ row }) => (
       <Badge
         className="font-semibold text-[0.65rem] uppercase tracking-wide"
-        variant={categoryBadgeByCategory[row.original.category]}
+        variant={categoryBadgeByCategory[row.original.category] ?? "outline"}
       >
         {row.original.category}
       </Badge>
@@ -208,7 +178,15 @@ const columns: ColumnDef<TransactionRow>[] = [
   },
 ];
 
-export function DashboardTransactionsTable() {
+interface DashboardTransactionsTableProps {
+  rows: TransactionRowDTO[];
+}
+
+export function DashboardTransactionsTable({
+  rows,
+}: DashboardTransactionsTableProps) {
+  const transactionRows = useMemo(() => rows.map(mapDto), [rows]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -228,7 +206,7 @@ export function DashboardTransactionsTable() {
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [searchTerm]);
+  }, [searchTerm, transactionRows]);
 
   useEffect(() => {
     const maxPageIndex = Math.max(

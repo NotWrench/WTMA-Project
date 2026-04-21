@@ -7,13 +7,22 @@ import {
   type SpendingTrendRange,
 } from "@/components/dashboard/spending-trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TrendPoint } from "@/lib/data/finance-types";
 
 const rangeOptions = [
   { label: "Weekly", value: "weekly" },
   { label: "Monthly", value: "monthly" },
 ] as const satisfies Array<{ label: string; value: SpendingTrendRange }>;
 
-export function SpendingTrendPanel() {
+interface SpendingTrendPanelProps {
+  monthlyTrend: TrendPoint[];
+  weeklyTrend: TrendPoint[];
+}
+
+export function SpendingTrendPanel({
+  monthlyTrend,
+  weeklyTrend,
+}: SpendingTrendPanelProps) {
   const [range, setRange] = useState<SpendingTrendRange>("monthly");
 
   return (
@@ -55,7 +64,11 @@ export function SpendingTrendPanel() {
         </div>
       </CardHeader>
       <CardContent>
-        <DashboardSpendingTrendChart range={range} />
+        <DashboardSpendingTrendChart
+          monthlyData={monthlyTrend}
+          range={range}
+          weeklyData={weeklyTrend}
+        />
       </CardContent>
     </Card>
   );

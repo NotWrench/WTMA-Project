@@ -1,5 +1,6 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowDown,
   ArrowDownToLine,
@@ -31,13 +32,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-const spendingData = [
-  { month: "Jan", spending: 69, budget: 70 },
-  { month: "Feb", spending: 73, budget: 74 },
-  { month: "Mar", spending: 78, budget: 76 },
-  { month: "Apr", spending: 82, budget: 79 },
-] as const;
+import type { ReportsPageData } from "@/lib/data/finance-types";
+import { formatInrPaise, formatInrPaiseWhole } from "@/lib/format-inr";
 
 const chartConfig = {
   spending: {
@@ -50,49 +46,34 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const categoryShare = [
-  { label: "Housing & Rent", percent: 45, amount: "₹32,000" },
-  { label: "Food & Dining", percent: 25, amount: "₹18,450" },
-  { label: "Transport", percent: 15, amount: "₹12,200" },
-  { label: "Others", percent: 15, amount: "₹19,500" },
-] as const;
+function iconForCategory(title: string): LucideIcon {
+  const t = title.toLowerCase();
+  if (t.includes("transport") || t.includes("travel")) {
+    return Car;
+  }
+  if (
+    t.includes("food") ||
+    t.includes("dining") ||
+    t.includes("grocer") ||
+    t.includes("restaurant")
+  ) {
+    return Pizza;
+  }
+  if (t.includes("home") || t.includes("rent") || t.includes("housing")) {
+    return Home;
+  }
+  return ShoppingBag;
+}
 
-const topSpendingCategories = [
-  {
-    title: "Housing & Utilities",
-    subtitle: "Rent, electricity, water & maintenance",
-    amount: "₹32,000",
-    delta: "+2% vs budget",
-    deltaVariant: "warning-light" as const,
-    icon: Home,
-  },
-  {
-    title: "Groceries & Dining",
-    subtitle: "Swiggy, grocery runs, restaurants",
-    amount: "₹18,450",
-    delta: "-5% vs budget",
-    deltaVariant: "success-light" as const,
-    icon: Pizza,
-  },
-  {
-    title: "Travel & Transport",
-    subtitle: "Uber, fuel, car EMI",
-    amount: "₹12,200",
-    delta: "On budget",
-    deltaVariant: "primary-light" as const,
-    icon: Car,
-  },
-  {
-    title: "Lifestyle & Health",
-    subtitle: "Gym, clothing, subscriptions",
-    amount: "₹9,500",
-    delta: "+15% vs budget",
-    deltaVariant: "destructive-light" as const,
-    icon: ShoppingBag,
-  },
-] as const;
+interface ReportsBentoViewProps {
+  data: ReportsPageData;
+}
 
-export function ReportsBentoView() {
+export function ReportsBentoView({ data }: ReportsBentoViewProps) {
+  const spendingData = data.spendingVsBudget;
+  const categoryShare = data.categoryShare;
+  const topSpendingCategories = data.topSpendingCategories;
+
   return (
     <section className="space-y-8">
       <header className="space-y-2">
@@ -113,7 +94,7 @@ export function ReportsBentoView() {
           variant="outline"
         >
           <CalendarDays className="size-4" />
-          Apr 1, 2026 - Apr 13, 2026
+          {data.rangeLabel}
         </Button>
 
         <div className="flex flex-wrap gap-2">
@@ -139,12 +120,21 @@ export function ReportsBentoView() {
               Net Savings
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-primary">
-              <span data-sensitive-balance="true">₹42,850</span>
+              <span data-sensitive-balance="true">
+                {formatInrPaiseWhole(data.netSavingsPaise)}
+              </span>
             </CardTitle>
-            <Badge className="justify-start" variant="primary-light">
-              <ArrowUp className="size-3.5" />
-              +12.5% from last month
-            </Badge>
+            {data.netSavingsDeltaPercent === null ? (
+              <Badge className="justify-start" variant="primary-light">
+                Budget vs spend
+              </Badge>
+            ) : (
+              <Badge className="justify-start" variant="primary-light">
+                <ArrowUp className="size-3.5" />
+                {data.netSavingsDeltaPercent >= 0 ? "+" : ""}
+                {data.netSavingsDeltaPercent}% vs last month
+              </Badge>
+            )}
           </CardHeader>
         </Card>
 
@@ -154,7 +144,9 @@ export function ReportsBentoView() {
               Total Income
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-foreground">
-              <span data-sensitive-balance="true">₹1,25,000</span>
+              <span className="text-2xl text-muted-foreground">
+                Not tracked
+              </span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -165,7 +157,9 @@ export function ReportsBentoView() {
               Total Expenses
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-foreground">
-              <span data-sensitive-balance="true">₹82,150</span>
+              <span data-sensitive-balance="true">
+                {formatInrPaiseWhole(data.totalExpensesPaise)}
+              </span>
             </CardTitle>
             <Badge className="justify-start" variant="warning-light">
               <ArrowDown className="size-3.5" />
@@ -186,7 +180,7 @@ export function ReportsBentoView() {
             Monthly Spending Analysis
           </h2>
           <p className="mb-4 text-muted-foreground text-sm">
-            Spending vs budget trajectory from Jan to Apr.
+            Spending vs budget (normalized to last four months).
           </p>
 
           <ChartContainer className="h-[280px] w-full" config={chartConfig}>
@@ -210,31 +204,41 @@ export function ReportsBentoView() {
             Expense Categories
           </h2>
           <p className="mb-4 text-muted-foreground text-sm">
-            <span data-sensitive-balance="true">₹82k</span> total tracked
+            <span data-sensitive-balance="true">
+              {formatInrPaiseWhole(data.totalExpensesPaise)}
+            </span>{" "}
+            total tracked
           </p>
 
           <div className="space-y-3">
-            {categoryShare.map((category) => (
-              <div className="space-y-1.5" key={category.label}>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-foreground text-sm">
-                    {category.label}
-                  </span>
-                  <span
-                    className="text-muted-foreground text-xs"
-                    data-sensitive-balance="true"
-                  >
-                    {category.percent}% • {category.amount}
-                  </span>
+            {categoryShare.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No expenses this period.
+              </p>
+            ) : (
+              categoryShare.map((category) => (
+                <div className="space-y-1.5" key={category.label}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-foreground text-sm">
+                      {category.label}
+                    </span>
+                    <span
+                      className="text-muted-foreground text-xs"
+                      data-sensitive-balance="true"
+                    >
+                      {category.percent}% •{" "}
+                      {formatInrPaise(category.amountPaise)}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+                      style={{ width: `${category.percent}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
-                    style={{ width: `${category.percent}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </motion.div>
 
@@ -258,37 +262,43 @@ export function ReportsBentoView() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {topSpendingCategories.map((category) => {
-              const Icon = category.icon;
+          {topSpendingCategories.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No category data for this period.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {topSpendingCategories.map((category) => {
+                const Icon = iconForCategory(category.title);
 
-              return (
-                <div
-                  className="rounded-2xl bg-surface-container-low p-4"
-                  key={category.title}
-                >
-                  <div className="mb-2 inline-flex size-9 items-center justify-center rounded-xl bg-surface-container-high text-foreground">
-                    <Icon className="size-4" />
-                  </div>
-                  <p className="font-semibold text-foreground text-sm">
-                    {category.title}
-                  </p>
-                  <p className="mt-1 text-muted-foreground text-xs">
-                    {category.subtitle}
-                  </p>
-                  <p
-                    className="mt-3 font-bold font-heading text-foreground text-xl"
-                    data-sensitive-balance="true"
+                return (
+                  <div
+                    className="rounded-2xl bg-surface-container-low p-4"
+                    key={category.title}
                   >
-                    {category.amount}
-                  </p>
-                  <Badge className="mt-2" variant={category.deltaVariant}>
-                    {category.delta}
-                  </Badge>
-                </div>
-              );
-            })}
-          </div>
+                    <div className="mb-2 inline-flex size-9 items-center justify-center rounded-xl bg-surface-container-high text-foreground">
+                      <Icon className="size-4" />
+                    </div>
+                    <p className="font-semibold text-foreground text-sm">
+                      {category.title}
+                    </p>
+                    <p className="mt-1 text-muted-foreground text-xs">
+                      {category.subtitle}
+                    </p>
+                    <p
+                      className="mt-3 font-bold font-heading text-foreground text-xl"
+                      data-sensitive-balance="true"
+                    >
+                      {formatInrPaiseWhole(category.amountPaise)}
+                    </p>
+                    <Badge className="mt-2" variant={category.deltaVariant}>
+                      {category.delta}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
 
         <motion.div

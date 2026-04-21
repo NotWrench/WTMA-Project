@@ -9,6 +9,7 @@ import { HeroSection } from "@/components/home/hero-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { TactileNoise } from "@/components/ui/tactile-noise";
 import { auth } from "@/lib/auth";
+import { getDashboardSnapshot } from "@/lib/data/finance";
 
 export default async function HomePage() {
   const session = await auth.api.getSession({
@@ -16,9 +17,11 @@ export default async function HomePage() {
   });
 
   if (session) {
+    const snapshot = await getDashboardSnapshot(session.user.id);
+
     return (
       <DashboardShell user={getDashboardUser(session)}>
-        <DashboardOverview />
+        <DashboardOverview snapshot={snapshot} />
       </DashboardShell>
     );
   }

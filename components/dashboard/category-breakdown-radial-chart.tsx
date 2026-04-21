@@ -10,16 +10,6 @@ import {
 import { STITCH_COLORS } from "@/components/dashboard/stitch-colors";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 
-const categoryShare = 64;
-
-const chartData = [
-  {
-    category: "essential",
-    share: categoryShare,
-    fill: "var(--color-essential)",
-  },
-] as const;
-
 const chartConfig = {
   essential: {
     label: "Essential",
@@ -30,7 +20,22 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function CategoryBreakdownRadialChart() {
+export function CategoryBreakdownRadialChart({
+  sharePercent,
+  topLabel,
+}: {
+  sharePercent: number;
+  topLabel: string;
+}) {
+  const clamped = Math.min(100, Math.max(0, sharePercent));
+  const chartData = [
+    {
+      category: "essential",
+      share: clamped,
+      fill: "var(--color-essential)",
+    },
+  ] as const;
+
   return (
     <ChartContainer
       className="mx-auto aspect-square max-h-[230px]"
@@ -70,14 +75,14 @@ export function CategoryBreakdownRadialChart() {
                     x={viewBox.cx}
                     y={viewBox.cy}
                   >
-                    {`${chartData[0].share}%`}
+                    {`${clamped}%`}
                   </tspan>
                   <tspan
                     className="fill-muted-foreground font-medium"
                     x={viewBox.cx}
                     y={(viewBox.cy || 0) + 22}
                   >
-                    Essential
+                    {topLabel}
                   </tspan>
                 </text>
               );

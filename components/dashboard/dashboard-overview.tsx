@@ -12,26 +12,35 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import type { DashboardSnapshot } from "@/lib/data/finance-types";
+import { formatInrPaise } from "@/lib/format-inr";
 
-const categoryBreakdown = [
-  {
-    label: "Rent & Utilities",
-    amount: "₹ 42,000",
-    colorClassName: "bg-primary",
-  },
-  {
-    label: "Food & Dining",
-    amount: "₹ 18,500",
-    colorClassName: "bg-secondary",
-  },
-  {
-    label: "Travel",
-    amount: "₹ 9,200",
-    colorClassName: "bg-tertiary",
-  },
-] as const;
+interface DashboardOverviewProps {
+  snapshot: DashboardSnapshot;
+}
 
-export function DashboardOverview() {
+export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
+  const {
+    totalSpendingPaiseCurrentMonth,
+    previousMonthSpendingPaise,
+    remainingBudgetPaise,
+    budgetProgressPercent,
+    topCategory,
+    categoryBreakdown,
+    monthlyTrend,
+    weeklyTrend,
+    recentTransactions,
+  } = snapshot;
+
+  const spendingChangePercent =
+    previousMonthSpendingPaise > 0
+      ? Math.round(
+          ((totalSpendingPaiseCurrentMonth - previousMonthSpendingPaise) /
+            previousMonthSpendingPaise) *
+            100
+        )
+      : null;
+
   return (
     <>
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -54,15 +63,24 @@ export function DashboardOverview() {
               <div className="inline-flex size-10 items-center justify-center rounded-lg bg-on-primary-container/10 text-on-primary-container">
                 <Landmark className="size-5" />
               </div>
-              <Badge className="font-semibold" variant="primary-light">
-                +12% vs last month
-              </Badge>
+              {spendingChangePercent === null ? (
+                <Badge className="font-semibold" variant="primary-light">
+                  This month
+                </Badge>
+              ) : (
+                <Badge className="font-semibold" variant="primary-light">
+                  {spendingChangePercent >= 0 ? "+" : ""}
+                  {spendingChangePercent}% vs last month
+                </Badge>
+              )}
             </div>
             <CardDescription className="mt-1 font-semibold text-[0.7rem] text-on-primary-container/70 uppercase tracking-widest">
               Total Spending
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-on-primary-container">
-              <span data-sensitive-balance="true">₹ 84,250</span>
+              <span data-sensitive-balance="true">
+                {formatInrPaise(totalSpendingPaiseCurrentMonth)}
+              </span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -76,11 +94,13 @@ export function DashboardOverview() {
               Remaining Budget
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-secondary">
-              <span data-sensitive-balance="true">₹ 35,750</span>
+              <span data-sensitive-balance="true">
+                {formatInrPaise(remainingBudgetPaise)}
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Progress className="gap-0" value={70} />
+            <Progress className="gap-0" value={budgetProgressPercent} />
           </CardContent>
         </Card>
 
@@ -93,17 +113,22 @@ export function DashboardOverview() {
               Top Category
             </CardDescription>
             <CardTitle className="font-extrabold font-heading text-4xl text-on-tertiary-container">
-              Essentials
+              {topCategory?.name ?? "—"}
             </CardTitle>
             <p className="text-on-tertiary-container/70 text-xs">
-              42% of total expenditures
+              {topCategory
+                ? `${topCategory.sharePercent}% of total expenditures`
+                : "No spending this month yet"}
             </p>
           </CardHeader>
         </Card>
       </section>
 
       <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <SpendingTrendPanel />
+        <SpendingTrendPanel
+          monthlyTrend={monthlyTrend}
+          weeklyTrend={weeklyTrend}
+        />
 
         <Card className="border border-border/40 bg-surface shadow-none lg:col-span-4">
           <CardHeader>
@@ -112,30 +137,39 @@ export function DashboardOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <CategoryBreakdownRadialChart />
+            <CategoryBreakdownRadialChart
+              sharePercent={topCategory?.sharePercent ?? 0}
+              topLabel={topCategory?.name ?? "—"}
+            />
 
             <div className="space-y-3">
-              {categoryBreakdown.map((item) => (
-                <div
-                  className="flex items-center justify-between gap-3"
-                  key={item.label}
-                >
-                  <div className="flex items-center gap-2">
+              {categoryBreakdown.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No category data for this month yet.
+                </p>
+              ) : (
+                categoryBreakdown.map((item) => (
+                  <div
+                    className="flex items-center justify-between gap-3"
+                    key={item.label}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`size-2.5 rounded-full ${item.colorClassName}`}
+                      />
+                      <span className="font-medium text-foreground text-sm">
+                        {item.label}
+                      </span>
+                    </div>
                     <span
-                      className={`size-2.5 rounded-full ${item.colorClassName}`}
-                    />
-                    <span className="font-medium text-foreground text-sm">
-                      {item.label}
+                      className="font-semibold text-foreground text-sm"
+                      data-sensitive-balance="true"
+                    >
+                      {formatInrPaise(item.amountPaise)}
                     </span>
                   </div>
-                  <span
-                    className="font-semibold text-foreground text-sm"
-                    data-sensitive-balance="true"
-                  >
-                    {item.amount}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -149,7 +183,7 @@ export function DashboardOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DashboardTransactionsTable />
+            <DashboardTransactionsTable rows={recentTransactions} />
           </CardContent>
         </Card>
       </section>

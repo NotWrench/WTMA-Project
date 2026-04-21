@@ -2,6 +2,7 @@
 
 import { AlertTriangle, PiggyBank, Sparkles, Target } from "lucide-react";
 import { motion } from "motion/react";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/ui/bento-grid";
 import {
@@ -12,13 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-
-interface CategoryBudget {
-  allocated: number;
-  label: string;
-  spent: number;
-  toneClassName: string;
-}
+import type { BudgetPageData } from "@/lib/data/finance-types";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -26,58 +21,44 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
-const budgetCategories: CategoryBudget[] = [
-  {
-    label: "Housing",
-    allocated: 42_000,
-    spent: 38_500,
-    toneClassName: "bg-primary",
-  },
-  {
-    label: "Food & Dining",
-    allocated: 18_000,
-    spent: 14_200,
-    toneClassName: "bg-secondary",
-  },
-  {
-    label: "Mobility",
-    allocated: 11_000,
-    spent: 9450,
-    toneClassName: "bg-tertiary",
-  },
-  {
-    label: "Subscriptions",
-    allocated: 4500,
-    spent: 4850,
-    toneClassName: "bg-destructive",
-  },
-];
+interface CategoryBudget {
+  allocated: number;
+  id: string;
+  label: string;
+  spent: number;
+  toneClassName: string;
+}
 
-const monthlyPulse = [
-  { month: "Jan", utilization: 81 },
-  { month: "Feb", utilization: 74 },
-  { month: "Mar", utilization: 69 },
-  { month: "Apr", utilization: 77 },
-] as const;
+interface BudgetBentoViewProps {
+  data: BudgetPageData;
+}
 
-const totalAllocated = budgetCategories.reduce(
-  (sum, category) => sum + category.allocated,
-  0
-);
-const totalSpent = budgetCategories.reduce(
-  (sum, category) => sum + category.spent,
-  0
-);
-const totalRemaining = totalAllocated - totalSpent;
-const utilizationPercentage = Math.min(
-  100,
-  Math.round((totalSpent / totalAllocated) * 100)
-);
-const atRiskBudgets = budgetCategories.filter(
-  (category) => category.spent > category.allocated
-);
+export function BudgetBentoView({ data }: BudgetBentoViewProps) {
+  const budgetCategories: CategoryBudget[] = useMemo(
+    () =>
+      data.categories.map((c) => ({
+        id: c.id,
+        label: c.label,
+        allocated: c.allocatedPaise / 100,
+        spent: c.spentPaise / 100,
+        toneClassName: c.toneClassName,
+      })),
+    [data.categories]
+  );
 
-export function BudgetBentoView() {
+  const totalAllocated = data.totalAllocatedPaise / 100;
+  const totalSpent = data.totalSpentPaise / 100;
+  const totalRemaining = totalAllocated - totalSpent;
+  const utilizationPercentage =
+    totalAllocated > 0
+      ? Math.min(100, Math.round((totalSpent / totalAllocated) * 100))
+      : 0;
+  const atRiskBudgets = budgetCategories.filter(
+    (category) => category.spent > category.allocated
+  );
+
+  const monthlyPulse = data.monthlyPulse;
+
   return (
     <section className="space-y-8">
       <header className="space-y-2">
@@ -174,71 +155,81 @@ export function BudgetBentoView() {
             <Badge variant="outline">{utilizationPercentage}% utilized</Badge>
           </div>
 
-          <div className="space-y-4">
-            {budgetCategories.map((category) => {
-              const percentage = Math.min(
-                100,
-                Math.round((category.spent / category.allocated) * 100)
-              );
-              const remaining = category.allocated - category.spent;
-              const isOverLimit = remaining < 0;
+          {budgetCategories.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No budget envelopes for this month. Add rows in your database or
+              seed script.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {budgetCategories.map((category) => {
+                const percentage =
+                  category.allocated > 0
+                    ? Math.min(
+                        100,
+                        Math.round((category.spent / category.allocated) * 100)
+                      )
+                    : 0;
+                const remaining = category.allocated - category.spent;
+                const isOverLimit = remaining < 0;
 
-              return (
-                <div
-                  className="rounded-2xl bg-surface-container-low p-3"
-                  key={category.label}
-                >
-                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-foreground text-sm">
-                      {category.label}
-                    </p>
-                    <Badge
-                      variant={
-                        remaining >= 0 ? "primary-light" : "destructive-light"
-                      }
-                    >
-                      {remaining >= 0 ? "Healthy" : "Over limit"}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className="font-medium text-muted-foreground text-xs"
-                      data-sensitive-balance="true"
-                    >
-                      {currencyFormatter.format(category.spent)} spent
-                    </span>
-                    <span
-                      className="font-semibold text-foreground text-xs"
-                      data-sensitive-balance="true"
-                    >
-                      {currencyFormatter.format(category.allocated)} budget
-                    </span>
-                  </div>
-
-                  {isOverLimit ? null : (
-                    <Progress className="mt-2" value={percentage} />
-                  )}
-
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">
-                      {isOverLimit ? "Over by" : "Remaining"}
-                    </span>
-                    <span
-                      className="font-semibold text-foreground text-xs"
-                      data-sensitive-balance="true"
-                    >
-                      {currencyFormatter.format(Math.abs(remaining))}
-                    </span>
-                  </div>
-
+                return (
                   <div
-                    className={`mt-2 h-1.5 w-16 rounded-full ${category.toneClassName}`}
-                  />
-                </div>
-              );
-            })}
-          </div>
+                    className="rounded-2xl bg-surface-container-low p-3"
+                    key={category.id}
+                  >
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-semibold text-foreground text-sm">
+                        {category.label}
+                      </p>
+                      <Badge
+                        variant={
+                          remaining >= 0 ? "primary-light" : "destructive-light"
+                        }
+                      >
+                        {remaining >= 0 ? "Healthy" : "Over limit"}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className="font-medium text-muted-foreground text-xs"
+                        data-sensitive-balance="true"
+                      >
+                        {currencyFormatter.format(category.spent)} spent
+                      </span>
+                      <span
+                        className="font-semibold text-foreground text-xs"
+                        data-sensitive-balance="true"
+                      >
+                        {currencyFormatter.format(category.allocated)} budget
+                      </span>
+                    </div>
+
+                    {isOverLimit ? null : (
+                      <Progress className="mt-2" value={percentage} />
+                    )}
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-muted-foreground text-xs">
+                        {isOverLimit ? "Over by" : "Remaining"}
+                      </span>
+                      <span
+                        className="font-semibold text-foreground text-xs"
+                        data-sensitive-balance="true"
+                      >
+                        {currencyFormatter.format(Math.abs(remaining))}
+                      </span>
+                    </div>
+
+                    <div
+                      className={`mt-2 h-1.5 w-16 rounded-full ${category.toneClassName}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
 
         <motion.div
@@ -251,7 +242,7 @@ export function BudgetBentoView() {
             Utilization Pulse
           </h2>
           <p className="mb-4 text-muted-foreground text-sm">
-            Last 6 months budget usage against your plan.
+            Last 4 months budget usage against your plan.
           </p>
 
           <div className="space-y-3">
@@ -318,7 +309,7 @@ export function BudgetBentoView() {
                 return (
                   <div
                     className="grid grid-cols-[1.3fr_1fr_1fr_1fr] items-center px-4 py-3 text-sm"
-                    key={category.label}
+                    key={category.id}
                   >
                     <span className="font-semibold text-foreground">
                       {category.label}

@@ -9,23 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-const monthlyTrendData = [
-  { label: "Jan", spending: 15_600 },
-  { label: "Feb", spending: 23_250 },
-  { label: "Mar", spending: 16_800 },
-  { label: "Apr", spending: 24_200 },
-] satisfies TrendDataPoint[];
-
-const weeklyTrendData = [
-  { label: "Mon", spending: 4200 },
-  { label: "Tue", spending: 3550 },
-  { label: "Wed", spending: 5100 },
-  { label: "Thu", spending: 2900 },
-  { label: "Fri", spending: 4700 },
-  { label: "Sat", spending: 6200 },
-  { label: "Sun", spending: 3900 },
-] satisfies TrendDataPoint[];
+import type { TrendPoint } from "@/lib/data/finance-types";
 
 interface TrendDataPoint {
   label: string;
@@ -42,15 +26,26 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const formatCurrency = (value: number): string =>
-  `₹ ${value.toLocaleString("en-IN")}`;
+  `₹ ${value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+
+function toChartPoints(points: TrendPoint[]): TrendDataPoint[] {
+  return points.map((p) => ({
+    label: p.label,
+    spending: Math.round(p.spendingPaise / 100),
+  }));
+}
 
 export function DashboardSpendingTrendChart({
+  monthlyData,
   range,
+  weeklyData,
 }: {
+  monthlyData: TrendPoint[];
   range: SpendingTrendRange;
+  weeklyData: TrendPoint[];
 }) {
   const trendData: TrendDataPoint[] =
-    range === "weekly" ? weeklyTrendData : monthlyTrendData;
+    range === "weekly" ? toChartPoints(weeklyData) : toChartPoints(monthlyData);
   const latestLabel = trendData.at(-1)?.label;
 
   return (

@@ -1,8 +1,11 @@
 "use client";
 
+import { format } from "date-fns";
 import { Plus, ReceiptText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { ExpenseDatePicker } from "@/components/dashboard/expense-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { createExpense } from "@/lib/actions/expense";
 
 type ExpenseCategory =
   | "Dining"
@@ -39,15 +43,24 @@ interface ExpenseFormState {
 const INITIAL_FORM_STATE: ExpenseFormState = {
   amount: "",
   category: "Essential",
-  date: "2026-04-13",
+  date: "",
   merchant: "",
   notes: "",
   paymentMethod: "UPI",
 };
 
 export function AddExpenseDialog() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState<ExpenseFormState>(INITIAL_FORM_STATE);
+
+  useEffect(() => {
+    setForm((f) => ({
+      ...f,
+      date: format(new Date(), "yyyy-MM-dd"),
+    }));
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -80,8 +93,34 @@ export function AddExpenseDialog() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsOpen(false);
-    setForm(INITIAL_FORM_STATE);
+    const amountRupees = Number.parseFloat(form.amount.replaceAll(",", ""));
+    if (!Number.isFinite(amountRupees) || amountRupees <= 0) {
+      toast.error("Enter a valid amount.");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await createExpense({
+        amountRupees,
+        category: form.category,
+        date: form.date,
+        merchant: form.merchant.trim(),
+        notes: form.notes,
+        paymentMethod: form.paymentMethod,
+      });
+
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+
+      setIsOpen(false);
+      setForm({
+        ...INITIAL_FORM_STATE,
+        date: format(new Date(), "yyyy-MM-dd"),
+      });
+      router.refresh();
+    });
   };
 
   return (
@@ -248,9 +287,9 @@ export function AddExpenseDialog() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">
+                  <Button disabled={isPending} type="submit">
                     <ReceiptText className="size-4" />
-                    Save Expense
+                    {isPending ? "Saving…" : "Save Expense"}
                   </Button>
                 </div>
               </form>

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import type { SettingsExportRow } from "@/lib/data/finance-types";
 import { SETTINGS_PREFERENCE_KEYS } from "@/lib/settings-preferences";
 import {
   type CurrencyCode,
@@ -37,34 +38,19 @@ import { cn } from "@/lib/utils";
 type InterfaceMode = "light" | "dark";
 
 const DEFAULT_LANGUAGE = "en-US";
-const TRANSACTION_EXPORT_ROWS = [
-  {
-    amount: 2450,
-    category: "Electronics",
-    date: "2026-04-13",
-    merchant: "Amazon India",
-    status: "Completed",
-  },
-  {
-    amount: 850,
-    category: "Lifestyle",
-    date: "2026-04-12",
-    merchant: "Blue Tokai Coffee",
-    status: "Completed",
-  },
-  {
-    amount: 35_000,
-    category: "Essential",
-    date: "2026-04-09",
-    merchant: "Property Rent",
-    status: "Scheduled",
-  },
-] as const;
 
 const settingsCardClassName =
   "rounded-3xl border border-border/20 p-6 shadow-[0_12px_30px_rgba(79,100,91,0.05)]";
 
-export function SettingsBentoView() {
+interface SettingsBentoViewProps {
+  exportRows: SettingsExportRow[];
+  monthlySpendingPaise: number;
+}
+
+export function SettingsBentoView({
+  exportRows,
+  monthlySpendingPaise,
+}: SettingsBentoViewProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("light");
   const language = useUserSettingsStore((state) => state.language);
@@ -106,8 +92,8 @@ export function SettingsBentoView() {
       style: "currency",
       currency,
       maximumFractionDigits: 2,
-    }).format(84_250);
-  }, [currency, language]);
+    }).format(monthlySpendingPaise / 100);
+  }, [currency, language, monthlySpendingPaise]);
 
   const saveLanguage = (nextLanguage: string | null) => {
     if (!nextLanguage) {
@@ -154,11 +140,11 @@ export function SettingsBentoView() {
   const handleExportCsv = () => {
     const csvRows = [
       ["Date", "Merchant", "Category", "Amount", "Status"],
-      ...TRANSACTION_EXPORT_ROWS.map((row) => [
+      ...exportRows.map((row) => [
         row.date,
         row.merchant,
         row.category,
-        row.amount.toString(),
+        row.amountRupees.toString(),
         row.status,
       ]),
     ];
@@ -186,8 +172,9 @@ export function SettingsBentoView() {
       return;
     }
 
-    const tableRows = TRANSACTION_EXPORT_ROWS.map(
-      (row) => `<tr>
+    const tableRows = exportRows
+      .map(
+        (row) => `<tr>
         <td>${row.date}</td>
         <td>${row.merchant}</td>
         <td>${row.category}</td>
@@ -195,10 +182,11 @@ export function SettingsBentoView() {
           style: "currency",
           currency,
           maximumFractionDigits: 2,
-        }).format(row.amount)}</td>
+        }).format(row.amountRupees)}</td>
         <td>${row.status}</td>
       </tr>`
-    ).join("");
+      )
+      .join("");
 
     reportWindow.document.write(`
       <!doctype html>
