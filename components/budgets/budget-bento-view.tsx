@@ -81,12 +81,6 @@ export function BudgetBentoView() {
   return (
     <section className="space-y-8">
       <header className="space-y-2">
-        <Badge
-          className="font-semibold uppercase tracking-widest"
-          variant="primary-light"
-        >
-          Serene Ledger Budgeting
-        </Badge>
         <h1 className="font-extrabold font-heading text-3xl text-foreground tracking-tight sm:text-4xl">
           Budget Planner
         </h1>
